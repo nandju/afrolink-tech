@@ -23,26 +23,26 @@ const footerLinks = {
 
 export function FooterSection() {
   return (
-    <footer className="px-6 py-16 border-t border-zinc-900">
+    <footer className="px-6 py-16 border-t border-[#000000]">
       <div className="max-w-5xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="font-display text-xl font-semibold text-zinc-100">
+            <Link href="/" className="font-display text-xl font-semibold text-[#ffffff]">
               AL Tech
             </Link>
-            <p className="mt-4 text-sm text-zinc-500 max-w-xs">
+            <p className="mt-4 text-sm text-[#ffffff]/70 max-w-xs">
               Générez des certificats rapidement et efficacement. La plateforme pour les organisations modernes.
             </p>
           </div>
 
           {/* Product Links */}
           <div>
-            <h4 className="font-heading text-sm font-semibold text-zinc-100 mb-4">Produit</h4>
+            <h4 className="font-heading text-sm font-semibold text-[#ffffff] mb-4">Produit</h4>
             <ul className="space-y-3">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+                  <Link href={link.href} className="text-sm text-[#ffffff]/70 hover:text-[#ffa51f] transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -52,11 +52,11 @@ export function FooterSection() {
 
           {/* Company Links */}
           <div>
-            <h4 className="font-heading text-sm font-semibold text-zinc-100 mb-4">Entreprise</h4>
+            <h4 className="font-heading text-sm font-semibold text-[#ffffff] mb-4">Entreprise</h4>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+                  <Link href={link.href} className="text-sm text-[#ffffff]/70 hover:text-[#ffa51f] transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -66,11 +66,11 @@ export function FooterSection() {
 
           {/* Legal Links */}
           <div>
-            <h4 className="font-heading text-sm font-semibold text-zinc-100 mb-4">Légal</h4>
+            <h4 className="font-heading text-sm font-semibold text-[#ffffff] mb-4">Légal</h4>
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
-                  <Link href={link.href} className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+                  <Link href={link.href} className="text-sm text-[#ffffff]/70 hover:text-[#ffa51f] transition-colors">
                     {link.label}
                   </Link>
                 </li>
@@ -80,16 +80,16 @@ export function FooterSection() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-zinc-900 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-zinc-600">© {new Date().getFullYear()} AL Tech. Tous droits réservés.</p>
+        <div className="pt-8 border-t border-[#000000] flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-[#ffffff]/50">© {new Date().getFullYear()} AL Tech. Tous droits réservés.</p>
           <div className="flex items-center gap-4">
-            <Link href="#" className="text-zinc-500 hover:text-zinc-300 transition-colors" aria-label="GitHub">
+            <Link href="#" className="text-[#ffffff]/70 hover:text-[#ffa51f] transition-colors" aria-label="GitHub">
               <Github className="w-5 h-5" />
             </Link>
-            <Link href="#" className="text-zinc-500 hover:text-zinc-300 transition-colors" aria-label="Twitter">
+            <Link href="#" className="text-[#ffffff]/70 hover:text-[#ffa51f] transition-colors" aria-label="Twitter">
               <Twitter className="w-5 h-5" />
             </Link>
-            <Link href="#" className="text-zinc-500 hover:text-zinc-300 transition-colors" aria-label="LinkedIn">
+            <Link href="#" className="text-[#ffffff]/70 hover:text-[#ffa51f] transition-colors" aria-label="LinkedIn">
               <Linkedin className="w-5 h-5" />
             </Link>
           </div>

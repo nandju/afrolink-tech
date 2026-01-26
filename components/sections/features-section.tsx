@@ -27,11 +27,11 @@ export function FeaturesSection() {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <p className="text-sm font-medium text-zinc-500 uppercase tracking-wider mb-4">Fonctionnalités</p>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-zinc-100 mb-4">
+          <p className="text-sm font-medium text-[#ffffff]/70 uppercase tracking-wider mb-4">Fonctionnalités</p>
+          <h2 className="font-display text-3xl md:text-4xl font-bold text-[#ffffff] mb-4">
             Tout ce dont vous avez besoin
           </h2>
-          <p className="text-zinc-500 max-w-xl mx-auto text-balance">
+          <p className="text-[#ffffff]/70 max-w-xl mx-auto text-balance">
             Des fonctionnalités puissantes pour générer vos certificats rapidement et efficacement.
           </p>
         </motion.div>
@@ -45,22 +45,22 @@ export function FeaturesSection() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="md:col-span-3"
           >
-            <Card className="group h-full overflow-hidden border-zinc-800/50 bg-zinc-900/50 hover:border-zinc-700/50 transition-all duration-300 rounded-2xl">
+            <Card className="group h-full overflow-hidden border-[#000000]/50 bg-[#000000]/30 hover:border-[#ffa51f]/50 transition-all duration-300 rounded-2xl">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-3">
                   <motion.div
-                    className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center"
+                    className="w-10 h-10 rounded-xl bg-[#000000] flex items-center justify-center"
                     whileHover={{ rotate: [0, -10, 10, 0] }}
                     transition={{ duration: 0.5 }}
                   >
-                    <BarChart3 className="w-5 h-5 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
+                    <BarChart3 className="w-5 h-5 text-[#ffa51f] group-hover:text-[#ffa51f] transition-colors" />
                   </motion.div>
-                  <p className="font-heading font-semibold text-zinc-100">Upload PDF Modèle</p>
+                  <p className="font-heading font-semibold text-[#ffffff]">Upload PDF Modèle</p>
                 </div>
-                <p className="text-zinc-500 text-sm mb-5">
+                <p className="text-[#ffffff]/70 text-sm mb-5">
                   Téléversez votre certificat PDF vierge et visualisez-le en temps réel.
                 </p>
-                <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4 overflow-hidden">
+                <div className="rounded-xl border border-[#000000] bg-[#000000] p-4 overflow-hidden">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex gap-1.5">
                       <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
@@ -154,34 +154,34 @@ export function FeaturesSection() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="md:col-span-2"
           >
-            <Card className="group h-full overflow-hidden border-zinc-800/50 bg-zinc-900/50 hover:border-zinc-700/50 transition-all duration-300 rounded-2xl">
+            <Card className="group h-full overflow-hidden border-[#000000]/50 bg-[#000000]/30 hover:border-[#ffa51f]/50 transition-all duration-300 rounded-2xl">
               <CardContent className="p-6 flex flex-col h-full">
                 <div className="flex items-center gap-3 mb-3">
                   <motion.div
-                    className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center"
+                    className="w-10 h-10 rounded-xl bg-[#000000] flex items-center justify-center"
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
                   >
-                    <Zap className="w-5 h-5 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
+                    <Zap className="w-5 h-5 text-[#ffa51f] group-hover:text-[#ffa51f] transition-colors" />
                   </motion.div>
-                  <p className="font-heading font-semibold text-zinc-100">Génération Rapide</p>
+                  <p className="font-heading font-semibold text-[#ffffff]">Génération Rapide</p>
                 </div>
-                <p className="text-zinc-500 text-sm mb-5">Générez des centaines de certificats en quelques secondes.</p>
+                <p className="text-[#ffffff]/70 text-sm mb-5">Générez des centaines de certificats en quelques secondes.</p>
                 <div className="mt-auto">
                   <div className="flex items-baseline gap-2 mb-3">
                     <motion.span
-                      className="text-4xl font-display font-bold text-zinc-100"
+                      className="text-4xl font-display font-bold text-[#ffa51f]"
                       initial={{ opacity: 0 }}
                       whileInView={{ opacity: 1 }}
                       viewport={{ once: true }}
                     >
                       100+
                     </motion.span>
-                    <span className="text-zinc-500 text-sm">certificats/min</span>
+                    <span className="text-[#ffffff]/70 text-sm">certificats/min</span>
                   </div>
-                  <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                  <div className="h-2 bg-[#000000] rounded-full overflow-hidden">
                     <motion.div
-                      className="h-full bg-gradient-to-r from-zinc-500 to-zinc-300 rounded-full"
+                      className="h-full bg-gradient-to-r from-[#ffa51f] to-[#ffa51f] rounded-full"
                       initial={{ width: "0%" }}
                       whileInView={{ width: "100%" }}
                       viewport={{ once: true }}
@@ -201,23 +201,23 @@ export function FeaturesSection() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="md:col-span-2"
           >
-            <Card className="group h-full overflow-hidden border-zinc-800/50 bg-zinc-900/50 hover:border-zinc-700/50 transition-all duration-300 rounded-2xl">
+            <Card className="group h-full overflow-hidden border-[#000000]/50 bg-[#000000]/30 hover:border-[#ffa51f]/50 transition-all duration-300 rounded-2xl">
               <CardContent className="p-6 flex flex-col h-full">
                 <div className="flex items-center gap-3 mb-3">
                   <motion.div
-                    className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center"
+                    className="w-10 h-10 rounded-xl bg-[#000000] flex items-center justify-center"
                     whileHover={{ y: -2 }}
                   >
-                    <Command className="w-5 h-5 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
+                    <Command className="w-5 h-5 text-[#ffa51f] group-hover:text-[#ffa51f] transition-colors" />
                   </motion.div>
-                  <p className="font-heading font-semibold text-zinc-100">Import Excel/CSV</p>
+                  <p className="font-heading font-semibold text-[#ffffff]">Import Excel/CSV</p>
                 </div>
-                <p className="text-zinc-500 text-sm mb-5">Importez vos listes de noms depuis Excel ou CSV en un clic.</p>
+                <p className="text-[#ffffff]/70 text-sm mb-5">Importez vos listes de noms depuis Excel ou CSV en un clic.</p>
                 <div className="flex justify-center gap-2 mt-auto">
                   {["⌘", "K"].map((key, i) => (
                     <motion.div
                       key={key}
-                      className="flex items-center justify-center w-12 h-12 rounded-xl bg-zinc-800/80 border border-zinc-700/50 shadow-lg"
+                      className="flex items-center justify-center w-12 h-12 rounded-xl bg-[#000000]/80 border border-[#ffa51f]/50 shadow-lg"
                       initial={{ y: 0 }}
                       animate={{ y: [0, -4, 0] }}
                       transition={{
@@ -228,7 +228,7 @@ export function FeaturesSection() {
                       }}
                       whileHover={{ scale: 1.1, y: -4 }}
                     >
-                      <span className="text-zinc-300 font-mono text-lg">{key}</span>
+                      <span className="text-[#ffa51f] font-mono text-lg">{key}</span>
                     </motion.div>
                   ))}
                 </div>
@@ -244,19 +244,19 @@ export function FeaturesSection() {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="md:col-span-3"
           >
-            <Card className="group h-full overflow-hidden border-zinc-800/50 bg-zinc-900/50 hover:border-zinc-700/50 transition-all duration-300 rounded-2xl">
+            <Card className="group h-full overflow-hidden border-[#000000]/50 bg-[#000000]/30 hover:border-[#ffa51f]/50 transition-all duration-300 rounded-2xl">
               <CardContent className="p-6 flex flex-col h-full">
                 <div className="flex items-center gap-3 mb-3">
                   <motion.div
-                    className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center"
+                    className="w-10 h-10 rounded-xl bg-[#000000] flex items-center justify-center"
                     whileHover={{ rotate: 180 }}
                     transition={{ duration: 0.4 }}
                   >
-                    <Layers className="w-5 h-5 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
+                    <Layers className="w-5 h-5 text-[#ffa51f] group-hover:text-[#ffa51f] transition-colors" />
                   </motion.div>
-                  <p className="font-heading font-semibold text-zinc-100">Position Personnalisable</p>
+                  <p className="font-heading font-semibold text-[#ffffff]">Position Personnalisable</p>
                 </div>
-                <p className="text-zinc-500 text-sm mb-5">Choisissez précisément où placer le nom sur votre certificat.</p>
+                <p className="text-[#ffffff]/70 text-sm mb-5">Choisissez précisément où placer le nom sur votre certificat.</p>
                 <div className="grid grid-cols-8 gap-2 mt-auto">
                   {integrationLogos.map((logo, i) => (
                     <motion.div
@@ -266,15 +266,15 @@ export function FeaturesSection() {
                       viewport={{ once: true }}
                       transition={{ duration: 0.3, delay: 0.3 + i * 0.05 }}
                       whileHover={{ scale: 1.15, y: -2 }}
-                      className="aspect-square rounded-lg border border-zinc-800 bg-zinc-800/50 flex items-center justify-center cursor-pointer"
+                      className="aspect-square rounded-lg border border-[#000000] bg-[#000000]/50 flex items-center justify-center cursor-pointer"
                     >
-                      <div className="w-5 h-5 rounded bg-zinc-700" />
+                      <div className="w-5 h-5 rounded bg-[#ffa51f]/30" />
                     </motion.div>
                   ))}
                 </div>
                 <motion.button
                   whileHover={{ x: 6 }}
-                  className="mt-4 flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="mt-4 flex items-center gap-1.5 text-sm text-[#ffffff]/70 hover:text-[#ffa51f] transition-colors"
                 >
                   Voir toutes les options <ArrowRight className="w-4 h-4" />
                 </motion.button>

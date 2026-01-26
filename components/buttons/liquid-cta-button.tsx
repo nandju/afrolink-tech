@@ -27,17 +27,17 @@ export function LiquidCtaButton({ children, className, onClick, theme = "dark" }
             className={cn(
               "flex items-center gap-2 px-6 py-3 rounded-full",
               isLight
-                ? "bg-gradient-to-b from-zinc-100 via-zinc-200 to-zinc-300"
-                : "bg-gradient-to-b from-zinc-800 to-zinc-900",
+                ? "bg-gradient-to-b from-[#ffffff] via-[#ffffff] to-[#ffffff]"
+                : "bg-[#ffa51f]",
             )}
           >
-            <span className={cn("text-sm font-medium transition-colors", isLight ? "text-zinc-600" : "text-zinc-200")}>
+            <span className={cn("text-sm font-medium transition-colors", isLight ? "text-[#000000]" : "text-[#000000]")}>
               {children}
             </span>
             <ArrowRight
               className={cn(
                 "w-5 h-5 group-hover:translate-x-1 transition-all duration-300",
-                isLight ? "text-zinc-600" : "text-zinc-200",
+                isLight ? "text-[#000000]" : "text-[#000000]",
               )}
             />
           </div>
