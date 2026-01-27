@@ -386,20 +386,20 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 px-6 py-8">
+    <main className="min-h-screen bg-[#000000] px-6 py-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="font-display text-4xl font-bold text-zinc-100 mb-2">
+            <h1 className="font-display text-4xl font-bold text-[#ffffff] mb-2">
               Génération de certificats
             </h1>
-            <p className="text-zinc-500">Générez automatiquement des certificats PDF personnalisés</p>
+            <p className="text-[#ffffff]/70">Générez automatiquement des certificats PDF personnalisés</p>
           </div>
           <Button
             variant="outline"
             onClick={handleLogout}
-            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+            className="border-[#ffa51f] text-[#ffffff] hover:bg-[#000000]/70"
           >
             <LogOut className="w-4 h-4 mr-2" />
             Déconnexion
@@ -410,20 +410,20 @@ export default function DashboardPage() {
           {/* Colonne gauche - Upload PDF et Liste des noms */}
           <div className="lg:col-span-2 space-y-6">
             {/* Étape 1: Upload PDF */}
-            <Card className="bg-zinc-900/80 border-zinc-800">
+            <Card className="bg-[#000000]/80 border-[#000000]">
               <CardHeader>
-                <CardTitle className="text-zinc-100">Étape 1 : Upload du PDF modèle</CardTitle>
-                <CardDescription className="text-zinc-500">
+                <CardTitle className="text-[#ffffff]">Étape 1 : Upload du PDF modèle</CardTitle>
+                <CardDescription className="text-[#ffffff]/70">
                   Téléversez un certificat PDF vierge qui servira de modèle
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="border-2 border-dashed border-zinc-700 rounded-lg p-8 text-center">
+                <div className="border-2 border-dashed border-[#ffa51f]/60 rounded-lg p-8 text-center">
                   {pdfPreview ? (
                     <div className="space-y-4">
                       <iframe
                         src={pdfPreview}
-                        className="w-full h-96 border border-zinc-700 rounded"
+                        className="w-full h-96 border border-[#000000] rounded bg-white"
                         title="PDF Preview"
                       />
                       <Button
@@ -433,7 +433,7 @@ export default function DashboardPage() {
                           setPdfPreview(null)
                           if (fileInputRef.current) fileInputRef.current.value = ""
                         }}
-                        className="border-zinc-700 text-zinc-300"
+                        className="border-[#ffa51f] text-[#ffffff] hover:bg-[#000000]/70"
                       >
                         <X className="w-4 h-4 mr-2" />
                         Supprimer le PDF
@@ -441,12 +441,12 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      <FileText className="w-12 h-12 mx-auto text-zinc-500" />
+                      <FileText className="w-12 h-12 mx-auto text-[#ffa51f]" />
                       <div>
-                        <p className="text-zinc-400 mb-2">Cliquez pour sélectionner un PDF</p>
+                        <p className="text-[#ffffff]/70 mb-2">Cliquez pour sélectionner un PDF</p>
                         <Button
                           onClick={() => fileInputRef.current?.click()}
-                          className="bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
+                          className="bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90"
                         >
                           <Upload className="w-4 h-4 mr-2" />
                           Choisir un fichier PDF
@@ -466,20 +466,26 @@ export default function DashboardPage() {
             </Card>
 
             {/* Étape 2: Ajout des noms */}
-            <Card className="bg-zinc-900/80 border-zinc-800">
+            <Card className="bg-[#000000]/80 border-[#000000]">
               <CardHeader>
-                <CardTitle className="text-zinc-100">Étape 2 : Choix du mode d'ajout des noms</CardTitle>
-                <CardDescription className="text-zinc-500">
+                <CardTitle className="text-[#ffffff]">Étape 2 : Choix du mode d'ajout des noms</CardTitle>
+                <CardDescription className="text-[#ffffff]/70">
                   Ajoutez les noms manuellement ou importez-les depuis un fichier Excel/CSV
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="manual" className="w-full">
-                  <TabsList className="bg-zinc-800 border-zinc-700">
-                    <TabsTrigger value="manual" className="data-[state=active]:bg-zinc-700">
+                  <TabsList className="bg-[#000000]/80 border-[#ffa51f]/40">
+                    <TabsTrigger
+                      value="manual"
+                      className="data-[state=active]:bg-[#ffa51f] data-[state=active]:text-[#000000]"
+                    >
                       Saisie manuelle
                     </TabsTrigger>
-                    <TabsTrigger value="excel" className="data-[state=active]:bg-zinc-700">
+                    <TabsTrigger
+                      value="excel"
+                      className="data-[state=active]:bg-[#ffa51f] data-[state=active]:text-[#000000]"
+                    >
                       Import Excel/CSV
                     </TabsTrigger>
                   </TabsList>
@@ -491,11 +497,11 @@ export default function DashboardPage() {
                         onChange={(e) => setNewName(e.target.value)}
                         onKeyPress={(e) => e.key === "Enter" && handleAddName()}
                         placeholder="Nom & Prénoms"
-                        className="bg-zinc-950/50 border-zinc-700 text-zinc-100"
+                        className="bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff]"
                       />
                       <Button
                         onClick={handleAddName}
-                        className="bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
+                        className="bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90"
                       >
                         <Plus className="w-4 h-4" />
                       </Button>
@@ -516,14 +522,14 @@ export default function DashboardPage() {
                   </TabsContent>
 
                   <TabsContent value="excel" className="space-y-4 mt-4">
-                    <div className="border-2 border-dashed border-zinc-700 rounded-lg p-6 text-center">
-                      <FileSpreadsheet className="w-12 h-12 mx-auto text-zinc-500 mb-4" />
-                      <p className="text-zinc-400 mb-4">
+                    <div className="border-2 border-dashed border-[#ffa51f]/60 rounded-lg p-6 text-center">
+                      <FileSpreadsheet className="w-12 h-12 mx-auto text-[#ffa51f] mb-4" />
+                      <p className="text-[#ffffff]/70 mb-4">
                         Format attendu : une colonne avec les noms
                       </p>
                       <Button
                         onClick={() => excelInputRef.current?.click()}
-                        className="bg-zinc-100 text-zinc-900 hover:bg-zinc-200"
+                        className="bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90"
                       >
                         <Upload className="w-4 h-4 mr-2" />
                         Importer un fichier .xlsx ou .csv
@@ -539,7 +545,7 @@ export default function DashboardPage() {
 
                     {names.length > 0 && (
                       <div className="space-y-2 max-h-64 overflow-y-auto">
-                        <p className="text-sm text-zinc-400 mb-2">
+                        <p className="text-sm text-[#ffffff]/70 mb-2">
                           {names.length} nom(s) importé(s)
                         </p>
                         {names.map((item) => (
@@ -560,23 +566,29 @@ export default function DashboardPage() {
 
           {/* Colonne droite - Configuration de position */}
           <div className="space-y-6">
-            <Card className="bg-zinc-900/80 border-zinc-800">
+          <Card className="bg-[#000000]/80 border-[#000000]">
               <CardHeader>
-                <CardTitle className="text-zinc-100 flex items-center gap-2">
-                  <Settings className="w-5 h-5" />
+              <CardTitle className="text-[#ffffff] flex items-center gap-2">
+                <Settings className="w-5 h-5 text-[#ffa51f]" />
                   Configuration de position
                 </CardTitle>
-                <CardDescription className="text-zinc-500">
+              <CardDescription className="text-[#ffffff]/70">
                   Définissez où placer le nom sur le certificat
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <Tabs value={positionMode} onValueChange={(v) => setPositionMode(v as "preset" | "custom")}>
-                  <TabsList className="w-full bg-zinc-800 border-zinc-700">
-                    <TabsTrigger value="preset" className="flex-1 data-[state=active]:bg-zinc-700">
+                <TabsList className="w-full bg-[#000000]/80 border-[#ffa51f]/40">
+                  <TabsTrigger
+                    value="preset"
+                    className="flex-1 data-[state=active]:bg-[#ffa51f] data-[state=active]:text-[#000000]"
+                  >
                       Positions rapides
                     </TabsTrigger>
-                    <TabsTrigger value="custom" className="flex-1 data-[state=active]:bg-zinc-700">
+                  <TabsTrigger
+                    value="custom"
+                    className="flex-1 data-[state=active]:bg-[#ffa51f] data-[state=active]:text-[#000000]"
+                  >
                       Personnalisée
                     </TabsTrigger>
                   </TabsList>
@@ -604,37 +616,37 @@ export default function DashboardPage() {
                   <TabsContent value="custom" className="space-y-4 mt-4">
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label className="text-zinc-300">Position X</Label>
+                        <Label className="text-[#ffffff]">Position X</Label>
                         <Input
                           type="number"
                           value={customPosition.x}
                           onChange={(e) =>
                             setCustomPosition({ ...customPosition, x: parseInt(e.target.value) || 0 })
                           }
-                          className="bg-zinc-950/50 border-zinc-700 text-zinc-100"
+                          className="bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff]"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-zinc-300">Position Y</Label>
+                        <Label className="text-[#ffffff]">Position Y</Label>
                         <Input
                           type="number"
                           value={customPosition.y}
                           onChange={(e) =>
                             setCustomPosition({ ...customPosition, y: parseInt(e.target.value) || 0 })
                           }
-                          className="bg-zinc-950/50 border-zinc-700 text-zinc-100"
+                          className="bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff]"
                         />
                       </div>
                       
                       {/* Indicateur de position */}
-                      <div className="p-3 bg-zinc-800/50 rounded-lg border border-zinc-700">
-                        <p className="text-sm font-medium text-zinc-300 mb-1">
+                      <div className="p-3 bg-[#000000]/70 rounded-lg border border-[#ffa51f]/40">
+                        <p className="text-sm font-medium text-[#ffffff] mb-1">
                           📍 Position actuelle
                         </p>
-                        <p className="text-xs text-zinc-400">
+                        <p className="text-xs text-[#ffffff]/70">
                           {getPositionDescription(customPosition.x, customPosition.y)}
                         </p>
-                        <div className="mt-2 text-xs text-zinc-500">
+                        <div className="mt-2 text-xs text-[#ffffff]/60">
                           Coordonnées : X = {customPosition.x}px, Y = {customPosition.y}px
                         </div>
                       </div>
@@ -642,44 +654,44 @@ export default function DashboardPage() {
                   </TabsContent>
                 </Tabs>
 
-                <div className="space-y-4 pt-4 border-t border-zinc-800">
+                <div className="space-y-4 pt-4 border-t border-[#000000]">
                   <div className="space-y-2">
-                    <Label className="text-zinc-300">Taille du texte</Label>
+                    <Label className="text-[#ffffff]">Taille du texte</Label>
                     <Input
                       type="number"
                       value={textSize}
                       onChange={(e) => setTextSize(parseInt(e.target.value) || 12)}
                       min="8"
                       max="72"
-                      className="bg-zinc-950/50 border-zinc-700 text-zinc-100"
+                      className="bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff]"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-zinc-300">Couleur du texte</Label>
+                    <Label className="text-[#ffffff]">Couleur du texte</Label>
                     <div className="flex gap-2">
                       <Input
                         type="color"
                         value={textColor}
                         onChange={(e) => setTextColor(e.target.value)}
-                        className="w-16 h-10 bg-zinc-950/50 border-zinc-700"
+                        className="w-16 h-10 bg-[#000000]/70 border-[#ffa51f]/40"
                       />
                       <Input
                         type="text"
                         value={textColor}
                         onChange={(e) => setTextColor(e.target.value)}
                         placeholder="#000000"
-                        className="flex-1 bg-zinc-950/50 border-zinc-700 text-zinc-100"
+                        className="flex-1 bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff]"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-zinc-300">Police</Label>
+                    <Label className="text-[#ffffff]">Police</Label>
                     <select
                       value={fontFamily}
                       onChange={(e) => setFontFamily(e.target.value)}
-                      className="w-full h-9 rounded-md border border-zinc-700 bg-zinc-950/50 px-3 text-zinc-100 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-600"
+                      className="w-full h-9 rounded-md border border-[#ffa51f]/40 bg-[#000000]/70 px-3 text-[#ffffff] text-sm focus:outline-none focus:ring-2 focus:ring-[#ffa51f]/70"
                     >
                       <optgroup label="Sans-serif">
                         <option value="Helvetica">Helvetica</option>
@@ -703,24 +715,24 @@ export default function DashboardPage() {
                         <option value="Courier-Bold">Courier Bold</option>
                       </optgroup>
                     </select>
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-[#ffffff]/60">
                       Note : Certaines polices sont mappées aux polices PDF standard pour compatibilité
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-zinc-800">
-                  <div className="flex items-start gap-3 p-4 bg-zinc-800/50 rounded-lg border border-zinc-700">
-                    <Info className="w-5 h-5 text-zinc-400 mt-0.5 shrink-0" />
+                <div className="pt-4 border-t border-[#000000]">
+                  <div className="flex items-start gap-3 p-4 bg-[#000000]/70 rounded-lg border border-[#ffa51f]/40">
+                    <Info className="w-5 h-5 text-[#ffa51f] mt-0.5 shrink-0" />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-zinc-300">Information sur le placement</p>
-                      <p className="text-xs text-zinc-500 leading-relaxed mb-2">
+                      <p className="text-sm font-medium text-[#ffffff]">Information sur le placement</p>
+                      <p className="text-xs text-[#ffffff]/70 leading-relaxed mb-2">
                         Les informations seront placées en fonction des coordonnées définies. Vous pouvez ajuster la position pour un rendu plus précis sur votre certificat.
                       </p>
                       {positionMode === "preset" && (
-                        <div className="mt-2 p-2 bg-zinc-900/50 rounded border border-zinc-700">
-                          <p className="text-xs text-zinc-400">
-                            <span className="font-medium text-zinc-300">Position sélectionnée :</span> {getPositionIndicator()}
+                        <div className="mt-2 p-2 bg-[#000000]/80 rounded border border-[#ffa51f]/40">
+                          <p className="text-xs text-[#ffffff]/70">
+                            <span className="font-medium text-[#ffffff]">Position sélectionnée :</span> {getPositionIndicator()}
                           </p>
                         </div>
                       )}
@@ -734,7 +746,7 @@ export default function DashboardPage() {
             <Button
               onClick={generateCertificates}
               disabled={!pdfFile || names.length === 0 || isGenerating}
-              className="w-full bg-zinc-100 text-zinc-900 hover:bg-zinc-200 font-medium h-12 text-base"
+              className="w-full bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90 font-medium h-12 text-base"
             >
               {isGenerating ? (
                 <>
@@ -776,33 +788,33 @@ function NameItemComponent({
   }
 
   return (
-    <div className="flex items-center gap-2 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700">
+    <div className="flex items-center gap-2 p-3 bg-[#000000]/70 rounded-lg border border-[#ffa51f]/40">
       {isEditing ? (
         <>
           <Input
             value={editValue}
             onChange={(e) => setEditValue(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSave()}
-            className="flex-1 bg-zinc-950/50 border-zinc-700 text-zinc-100 text-sm"
+            className="flex-1 bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff] text-sm"
             autoFocus
           />
           <Button
             size="icon"
             variant="ghost"
             onClick={handleSave}
-            className="h-8 w-8 text-zinc-300 hover:text-zinc-100"
+            className="h-8 w-8 text-[#ffffff] hover:text-[#ffa51f]"
           >
             <span className="text-sm">✓</span>
           </Button>
         </>
       ) : (
         <>
-          <span className="flex-1 text-zinc-300 text-sm">{item.name}</span>
+          <span className="flex-1 text-[#ffffff]/80 text-sm">{item.name}</span>
           <Button
             size="icon"
             variant="ghost"
             onClick={() => setIsEditing(true)}
-            className="h-8 w-8 text-zinc-400 hover:text-zinc-200"
+            className="h-8 w-8 text-[#ffffff]/60 hover:text-[#ffa51f]"
           >
             <Edit2 className="w-4 h-4" />
           </Button>
@@ -810,7 +822,7 @@ function NameItemComponent({
             size="icon"
             variant="ghost"
             onClick={() => onDelete(item.id)}
-            className="h-8 w-8 text-zinc-400 hover:text-red-400"
+            className="h-8 w-8 text-[#ffffff]/60 hover:text-red-400"
           >
             <Trash2 className="w-4 h-4" />
           </Button>

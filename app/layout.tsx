@@ -19,19 +19,19 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: "/icon-light-32x32.png",
+        url: "/logo_1.png",
         media: "(prefers-color-scheme: light)",
       },
       {
-        url: "/icon-dark-32x32.png",
+        url: "/logo_1.png",
         media: "(prefers-color-scheme: dark)",
       },
       {
-        url: "/icon.svg",
+        url: "/logo_1.png",
         type: "image/svg+xml",
       },
     ],
-    apple: "/apple-icon.png",
+    apple: "/logo_1.png",
   },
 }
 
@@ -50,7 +50,19 @@ export default function RootLayout({
       </head>
       <body className={`${manrope.variable} font-sans antialiased bg-zinc-950 text-zinc-100`}>
         <LenisProvider>{children}</LenisProvider>
-        <Toaster position="top-center" richColors />
+        <Toaster
+          position="top-center"
+          richColors
+          toastOptions={{
+            className:
+              "bg-[#000000] text-[#ffffff] border border-[#ffa51f] shadow-lg rounded-xl",
+            style: {
+              backgroundColor: "#000000",
+              color: "#ffffff",
+              borderColor: "#ffa51f",
+            },
+          }}
+        />
         <Analytics />
       </body>
     </html>

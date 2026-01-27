@@ -36,38 +36,38 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-zinc-950 flex items-center justify-center px-6 py-20">
+    <main className="min-h-screen bg-[#000000] flex items-center justify-center px-6 py-20">
       {/* Background gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-zinc-900/50 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#000000]/70 via-transparent to-transparent" />
 
       <div className="relative z-10 w-full max-w-md">
-        <Card className="bg-zinc-900/80 border-zinc-800 backdrop-blur-md p-8">
+        <Card className="bg-[#000000]/80 border-[#000000] backdrop-blur-md p-8">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-zinc-800 border border-zinc-700 mb-4">
-              <Lock className="w-8 h-8 text-zinc-400" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#000000] border border-[#ffa51f] mb-4">
+              <Lock className="w-8 h-8 text-[#ffa51f]" />
             </div>
-            <h1 className="font-display text-3xl font-bold text-zinc-100 mb-2">
+            <h1 className="font-display text-3xl font-bold text-[#ffffff] mb-2">
               Accès restreint
             </h1>
-            <p className="text-zinc-500 text-sm">
+            <p className="text-[#ffffff]/70 text-sm">
               Connectez-vous pour accéder à l'outil de génération
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-zinc-300">
+              <Label htmlFor="username" className="text-[#ffffff]">
                 Identifiant
               </Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#ffa51f]" />
                 <Input
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="Entrez votre identifiant"
-                  className="pl-10 bg-zinc-950/50 border-zinc-700 text-zinc-100 placeholder:text-zinc-600"
+                  className="pl-10 bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff] placeholder:text-[#ffffff]/40"
                   required
                   disabled={isLoading}
                 />
@@ -75,18 +75,18 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-zinc-300">
+              <Label htmlFor="password" className="text-[#ffffff]">
                 Mot de passe
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#ffa51f]" />
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Entrez votre mot de passe"
-                  className="pl-10 bg-zinc-950/50 border-zinc-700 text-zinc-100 placeholder:text-zinc-600"
+                  className="pl-10 bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff] placeholder:text-[#ffffff]/40"
                   required
                   disabled={isLoading}
                 />
@@ -95,15 +95,15 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full bg-zinc-100 text-zinc-900 hover:bg-zinc-200 font-medium"
+              className="w-full bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90 font-medium"
               disabled={isLoading}
             >
               {isLoading ? "Connexion..." : "Se connecter"}
             </Button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-zinc-800">
-            <p className="text-xs text-zinc-500 text-center">
+          <div className="mt-6 pt-6 border-t border-[#000000]">
+            <p className="text-xs text-[#ffffff]/60 text-center">
               ⚠️ Accès réservé aux utilisateurs autorisés
             </p>
           </div>
