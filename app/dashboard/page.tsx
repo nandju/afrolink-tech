@@ -292,7 +292,18 @@ const [initialY, setInitialY] = useState(500);
       setInitialY(initialY + py);
       let x = initialX;
       let y = initialY;
-      const colorRgb = { r: 0, g: 0, b: 0 };
+        const hexToRgb = (hex: string) => {
+          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+          return result
+            ? {
+                r: parseInt(result[1], 16) / 255,
+                g: parseInt(result[2], 16) / 255,
+                b: parseInt(result[3], 16) / 255,
+              }
+            : { r: 0, g: 0, b: 0 };
+        };
+
+        const colorRgb = hexToRgb(textColor);
       const pdfFontName = "Helvetica";
       const pdfDoc = await PDFDocument.load(pdfBytes);
       const pages = pdfDoc.getPages();
@@ -639,14 +650,9 @@ const [initialY, setInitialY] = useState(500);
                       value="preset"
                       className="flex-1 data-[state=active]:bg-[#ffa51f] data-[state=active]:text-[#000000]"
                     >
-                      Positions rapides
+                      Positionnement du texte
                     </TabsTrigger>
-                    <TabsTrigger
-                      value="custom"
-                      className="flex-1 data-[state=active]:bg-[#ffa51f] data-[state=active]:text-[#000000]"
-                    >
-                      Personnalisée
-                    </TabsTrigger>
+                    
                   </TabsList>
 
                   <TabsContent value="preset" className="space-y-4 mt-4">
@@ -671,55 +677,7 @@ const [initialY, setInitialY] = useState(500);
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="custom" className="space-y-4 mt-4">
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label className="text-[#ffffff]">Position X</Label>
-                        <Input
-                          type="number"
-                          value={customPosition.x}
-                          onChange={(e) =>
-                            setCustomPosition({
-                              ...customPosition,
-                              x: parseInt(e.target.value) || 0,
-                            })
-                          }
-                          className="bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff]"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-[#ffffff]">Position Y</Label>
-                        <Input
-                          type="number"
-                          value={customPosition.y}
-                          onChange={(e) =>
-                            setCustomPosition({
-                              ...customPosition,
-                              y: parseInt(e.target.value) || 0,
-                            })
-                          }
-                          className="bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff]"
-                        />
-                      </div>
-
-                      {/* Indicateur de position */}
-                      <div className="p-3 bg-[#000000]/70 rounded-lg border border-[#ffa51f]/40">
-                        <p className="text-sm font-medium text-[#ffffff] mb-1">
-                          📍 Position actuelle
-                        </p>
-                        <p className="text-xs text-[#ffffff]/70">
-                          {getPositionDescription(
-                            customPosition.x,
-                            customPosition.y,
-                          )}
-                        </p>
-                        <div className="mt-2 text-xs text-[#ffffff]/60">
-                          Coordonnées : X = {customPosition.x}px, Y ={" "}
-                          {customPosition.y}px
-                        </div>
-                      </div>
-                    </div>
-                  </TabsContent>
+                  
                 </Tabs>
 
                 <div className="space-y-4 pt-4 border-t border-[#000000]">
