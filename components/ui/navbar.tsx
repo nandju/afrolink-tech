@@ -6,8 +6,9 @@ import { ArrowRight, FileText, Menu, Sparkles, X } from "lucide-react"
 
 const navLinks = [
   { href: "#features", label: "Fonctionnalités" },
+  { href: "#workflow", label: "Workflow" },
   { href: "#testimonials", label: "Témoignages" },
-  { href: "#pricing", label: "Tarification" },
+  // { href: "#pricing", label: "Tarification" },
 ]
 
 export function Navbar() {
