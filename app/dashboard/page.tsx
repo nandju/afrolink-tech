@@ -17,12 +17,10 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Upload,
   FileText,
   Plus,
-  X,
   Edit2,
   Trash2,
   Download,
@@ -34,6 +32,9 @@ import {
   ArrowRight,
   Settings,
   GripVertical,
+  CheckCircle2,
+  Mail,
+  Users,
 } from "lucide-react";
 import { toast } from "sonner";
 import { clearAuthSession } from "@/lib/auth";
@@ -88,7 +89,26 @@ type NameItem = {
   id: string;
   name: string;
   fieldValues?: Record<string, string>;
+  email?: string;
   isEditing?: boolean;
+};
+
+type WizardStep = 1 | 2 | 3 | 4 | 5;
+type ParticipantMode = "manual" | "excel";
+
+const wizardSteps: { id: WizardStep; label: string; shortLabel: string }[] = [
+  { id: 1, label: "PDF Upload", shortLabel: "PDF" },
+  { id: 2, label: "Field Configuration", shortLabel: "Fields" },
+  { id: 3, label: "Participant Import", shortLabel: "Participants" },
+  { id: 4, label: "Email Configuration", shortLabel: "Emails" },
+  { id: 5, label: "Final Generation", shortLabel: "Generation" },
+];
+
+const isEmailColumn = (columnName: string) => {
+  const normalized = columnName.toLowerCase().replace(/[\s_-]+/g, "");
+  return ["email", "mail", "e-mail", "emailaddress", "adresseemail", "adressemail"].some((keyword) =>
+    normalized.includes(keyword.replace(/[\s_-]+/g, ""))
+  );
 };
 
 export default function DashboardPage() {
@@ -103,6 +123,17 @@ export default function DashboardPage() {
   const [selectedFieldId, setSelectedFieldId] = useState<string | null>(null);
   const [moveStep, setMoveStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [currentStep, setCurrentStep] = useState<WizardStep>(1);
+  const [maxValidatedStep, setMaxValidatedStep] = useState<WizardStep>(1);
+  const [participantMode, setParticipantMode] = useState<ParticipantMode | null>(null);
+  const [isDraggingPdf, setIsDraggingPdf] = useState(false);
+  const [importedColumns, setImportedColumns] = useState<string[]>([]);
+  const [detectedEmailColumn, setDetectedEmailColumn] = useState<string | null>(null);
+  const [emailEnabled, setEmailEnabled] = useState(false);
+  const [emailSubject, setEmailSubject] = useState("Votre certificat AfroCertify");
+  const [emailMessage, setEmailMessage] = useState(
+    "Bonjour {{first name}} {{last name}},\n\nVeuillez trouver votre certificat en pièce jointe.\n\nMerci."
+  );
   const fontBytesCacheRef = useRef<Map<string, Uint8Array>>(new Map());
   const previewUrlRef = useRef<string | null>(null);
 
@@ -209,6 +240,10 @@ export default function DashboardPage() {
 
   const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    await handlePdfFile(file);
+  };
+
+  const handlePdfFile = async (file?: File) => {
     if (!file || file.type !== "application/pdf") {
       toast.error("Veuillez sélectionner un fichier PDF valide");
       return;
@@ -222,6 +257,12 @@ export default function DashboardPage() {
     };
     reader.readAsDataURL(file);
     toast.success("PDF modèle chargé avec succès");
+  };
+
+  const handlePdfDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDraggingPdf(false);
+    await handlePdfFile(e.dataTransfer.files?.[0]);
   };
 
   const handleAddName = () => {
@@ -316,6 +357,9 @@ export default function DashboardPage() {
 
     const firstRow = data[0];
     const columns = Object.keys(firstRow);
+    const emailColumn = columns.find(isEmailColumn) || null;
+    setImportedColumns(columns);
+    setDetectedEmailColumn(emailColumn);
     
     if (columns.length === 1) {
       // Single column - treat as names (existing behavior)
@@ -335,8 +379,9 @@ export default function DashboardPage() {
       // Multiple columns - create text fields for each column
       const newFields: TextField[] = [];
       const columnNames = Object.keys(firstRow);
+      const pdfColumnNames = columnNames.filter((columnName) => columnName !== emailColumn);
       
-      columnNames.forEach((columnName, index) => {
+      pdfColumnNames.forEach((columnName, index) => {
         const newField: TextField = {
           id: `field-${Date.now()}-${index}`,
           name: columnName || `Champ ${index + 1}`,
@@ -357,12 +402,12 @@ export default function DashboardPage() {
       const importedNames: NameItem[] = [];
       data.forEach((row: any, index: number) => {
         // Create a combined name from all columns for display
-        const fieldValues = columnNames.reduce<Record<string, string>>((acc, col) => {
+        const fieldValues = pdfColumnNames.reduce<Record<string, string>>((acc, col) => {
           const value = row[col];
           acc[col] = value == null ? "" : String(value).trim();
           return acc;
         }, {});
-        const combinedName = columnNames
+        const combinedName = pdfColumnNames
           .map(col => fieldValues[col])
           .filter(Boolean)
           .join(" ");
@@ -371,12 +416,13 @@ export default function DashboardPage() {
             id: `excel-${Date.now()}-${index}`,
             name: combinedName.trim(),
             fieldValues,
+            email: emailColumn && row[emailColumn] ? String(row[emailColumn]).trim() : undefined,
           });
         }
       });
       
       setNames((prev) => [...prev, ...importedNames]);
-      toast.success(`${columnNames.length} champ(s) de texte créé(s) et ${importedNames.length} nom(s) importé(s)`);
+      toast.success(`${pdfColumnNames.length} champ(s) de texte créé(s) et ${importedNames.length} participant(s) importé(s)`);
     }
   };
 
@@ -594,17 +640,54 @@ export default function DashboardPage() {
     router.push("/login");
   };
 
+  const canValidateStep = (step: WizardStep) => {
+    if (step === 1) return Boolean(pdfFile);
+    if (step === 2) return Boolean(pdfFile && textFields.length > 0);
+    if (step === 3) return names.length > 0;
+    if (step === 4) return !emailEnabled || names.some((item) => item.email);
+    return Boolean(pdfFile && textFields.length > 0 && names.length > 0);
+  };
+
+  const goToStep = (step: WizardStep) => {
+    if (step <= maxValidatedStep) setCurrentStep(step);
+  };
+
+  const continueToStep = (nextStep: WizardStep) => {
+    if (!canValidateStep(currentStep)) {
+      toast.error("Complétez cette étape avant de continuer");
+      return;
+    }
+    setMaxValidatedStep((prev) => Math.max(prev, nextStep) as WizardStep);
+    setCurrentStep(nextStep);
+  };
+
+  const renderEmailPreview = () => {
+    const sample = names[0];
+    const values = sample?.fieldValues || {};
+    return emailMessage
+      .replaceAll("{{first name}}", values["First Name"] || values["Prénom"] || values["Prenom"] || "")
+      .replaceAll("{{last name}}", values["Last Name"] || values["Nom"] || "")
+      .replaceAll("{{job title}}", values["Job Title"] || values["Fonction"] || values["Poste"] || "")
+      .replaceAll("{{email}}", sample?.email || "");
+  };
+
+  const generateAndMaybeSendCertificates = async () => {
+    if (emailEnabled) {
+      toast.info("Envoi email Resend à connecter côté serveur. Le ZIP reste généré normalement.");
+    }
+    await generateCertificates();
+  };
+
   return (
-    <main className="min-h-screen bg-[#000000] px-6 py-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
+    <main className="min-h-screen bg-[#000000] px-4 py-6 text-[#ffffff] sm:px-6">
+      <div className="mx-auto max-w-7xl">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="font-display text-4xl font-bold text-[#ffffff] mb-2">
-              Génération de certificats
+              AfroCertify Studio
             </h1>
             <p className="text-[#ffffff]/70">
-              Générez automatiquement des certificats PDF personnalisés
+              Un assistant simple pour configurer, importer et générer vos certificats.
             </p>
           </div>
           <Button
@@ -616,462 +699,271 @@ export default function DashboardPage() {
             Déconnexion
           </Button>
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Colonne gauche - Upload PDF et Liste des noms */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Étape 1: Upload PDF */}
-            <Card className="bg-[#000000]/80 border-[#000000]">
-              <CardHeader>
-                <CardTitle className="text-[#ffffff]">
-                  Étape 1 : Upload du PDF modèle
-                </CardTitle>
-                <CardDescription className="text-[#ffffff]/70">
-                  Téléversez un certificat PDF vierge qui servira de modèle
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="border-2 border-dashed border-[#ffa51f]/60 rounded-lg p-8 text-center">
-                  {pdfPreview ? (
-                    <div className="space-y-4">
-                      <iframe
-                        src={pdfPreview}
-                        className="w-full h-96 border border-[#000000] rounded bg-white"
-                        title="PDF Preview"
-                      />
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setPdfFile(null);
-                          setPdfPreview(null);
-                          if (fileInputRef.current)
-                            fileInputRef.current.value = "";
-                        }}
-                        className="border-[#ffa51f] text-[#ffffff] hover:bg-[#000000]/70"
-                      >
-                        <X className="w-4 h-4 mr-2" />
-                        Supprimer le PDF
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <FileText className="w-12 h-12 mx-auto text-[#ffa51f]" />
-                      <div>
-                        <p className="text-[#ffffff]/70 mb-2">
-                          Cliquez pour sélectionner un PDF
-                        </p>
-                        <Button
-                          onClick={() => fileInputRef.current?.click()}
-                          className="bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90"
-                        >
-                          <Upload className="w-4 h-4 mr-2" />
-                          Choisir un fichier PDF
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="application/pdf"
-                    onChange={handlePdfUpload}
-                    className="hidden"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Étape 2: Gestion des champs de texte */}
-            <Card className="bg-[#000000]/80 border-[#000000]">
-              <CardHeader>
-                <CardTitle className="text-[#ffffff]">
-                  Étape 2 : Configuration des champs de texte
-                </CardTitle>
-                <CardDescription className="text-[#ffffff]/70">
-                  Ajoutez et configurez les champs de texte pour vos certificats
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Text fields list */}
-                <div className="space-y-2">
+        <Card className="mb-6 border-[#ffffff]/10 bg-[#080808]/80 p-4">
+          <div className="mb-4 flex items-center justify-between text-sm text-[#ffffff]/60">
+            <span>Step {currentStep} of 5</span>
+            <span>{Math.round((currentStep / 5) * 100)}%</span>
+          </div>
+          <div className="mb-5 h-2 overflow-hidden rounded-full bg-[#ffffff]/10">
+            <div className="h-full rounded-full bg-[#ffa51f] transition-all duration-500" style={{ width: `${(currentStep / 5) * 100}%` }} />
+          </div>
+          <div className="grid gap-2 md:grid-cols-5">
+            {wizardSteps.map((step) => {
+              const isDone = step.id < currentStep || step.id < maxValidatedStep;
+              const isActive = step.id === currentStep;
+              const isClickable = step.id <= maxValidatedStep;
+              return (
+                <button
+                  key={step.id}
+                  type="button"
+                  onClick={() => goToStep(step.id)}
+                  disabled={!isClickable}
+                  className={`rounded-2xl border p-3 text-left transition-all ${
+                    isActive
+                      ? "border-[#ffa51f] bg-[#ffa51f]/15"
+                      : isDone
+                        ? "border-[#ffa51f]/35 bg-[#ffffff]/5"
+                        : "border-[#ffffff]/10 bg-[#ffffff]/3 opacity-60"
+                  }`}
+                >
                   <div className="flex items-center justify-between">
-                    <Label className="text-[#ffffff]">Champs de texte</Label>
-                    <Button
-                      onClick={() => addTextField()}
-                      size="sm"
-                      className="bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Ajouter un champ
-                    </Button>
+                    <span className="text-xs text-[#ffffff]/55">{step.label}</span>
+                    {isDone && <CheckCircle2 className="size-4 text-[#ffa51f]" />}
                   </div>
-                  
-                  {textFields.length > 0 && (
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
-                      {textFields.map((field, index) => (
-                        <div
-                          key={field.id}
-                          className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                            selectedFieldId === field.id
-                              ? "bg-[#ffa51f]/20 border-[#ffa51f]"
-                              : "bg-[#000000]/70 border-[#ffa51f]/40 hover:border-[#ffa51f]/60"
-                          }`}
-                          onClick={() => setSelectedFieldId(field.id)}
-                        >
-                          <div className="flex items-center gap-2">
-                            <GripVertical className="w-4 h-4 text-[#ffa51f]/60" />
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="text-[#ffffff] font-medium">
-                                  {field.isEditing ? (
-                                    <Input
-                                      value={field.name}
-                                      onChange={(e) => updateTextField(field.id, { name: e.target.value })}
-                                      onBlur={() => updateTextField(field.id, { isEditing: false })}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                          updateTextField(field.id, { isEditing: false });
-                                        }
-                                      }}
-                                      className="bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff] text-sm h-6"
-                                      autoFocus
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
-                                  ) : (
-                                    <span
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        updateTextField(field.id, { isEditing: true });
-                                      }}
-                                      className="cursor-text"
-                                    >
-                                      {field.name}
-                                    </span>
-                                  )}
-                                </span>
-                                <span className="text-[#ffffff]/60 text-xs">
-                                  ({field.x}, {field.y})
-                                </span>
-                              </div>
-                              <div className="text-[#ffffff]/60 text-xs mt-1">
-                                {field.fontFamily} {field.fontWeight} • {field.fontSize}px • {field.color}
-                              </div>
-                            </div>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteTextField(field.id);
-                              }}
-                              className="h-6 w-6 text-[#ffffff]/60 hover:text-red-400"
-                              disabled={textFields.length === 1}
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                  <p className="mt-1 font-semibold text-[#ffffff]">{step.shortLabel}</p>
+                </button>
+              );
+            })}
+          </div>
+        </Card>
 
-            {/* Étape 3: Ajout des noms */}
-            <Card className="bg-[#000000]/80 border-[#000000]">
+        {currentStep === 1 && (
+          <Card className="border-[#ffffff]/10 bg-[#080808]/80">
+            <CardHeader>
+              <CardTitle className="text-[#ffffff]">1. Importez votre PDF</CardTitle>
+              <CardDescription className="text-[#ffffff]/60">Déposez votre modèle PDF vierge. La prévisualisation restera active pendant tout le processus.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div
+                onDrop={handlePdfDrop}
+                onDragOver={(e) => e.preventDefault()}
+                onDragEnter={() => setIsDraggingPdf(true)}
+                onDragLeave={() => setIsDraggingPdf(false)}
+                className={`rounded-[2rem] border-2 border-dashed p-8 text-center transition-all ${isDraggingPdf ? "border-[#ffa51f] bg-[#ffa51f]/10" : "border-[#ffa51f]/35 bg-[#ffffff]/4"}`}
+              >
+                <FileText className="mx-auto mb-4 size-14 text-[#ffa51f]" />
+                <h2 className="text-2xl font-semibold text-[#ffffff]">{pdfFile ? pdfFile.name : "Glissez votre PDF ici"}</h2>
+                <p className="mt-2 text-sm text-[#ffffff]/60">Format accepté : PDF uniquement</p>
+                <Button onClick={() => fileInputRef.current?.click()} className="mt-6 bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90">
+                  <Upload className="mr-2 size-4" />
+                  Choisir un fichier PDF
+                </Button>
+                <input ref={fileInputRef} type="file" accept="application/pdf" onChange={handlePdfUpload} className="hidden" />
+              </div>
+              {pdfPreview && <iframe src={pdfPreview} className="h-[620px] w-full rounded-2xl border border-[#ffffff]/10 bg-white" title="PDF Preview" />}
+              <div className="flex justify-end">
+                <Button onClick={() => continueToStep(2)} disabled={!pdfFile} className="bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90">
+                  Continuer <ArrowRight className="ml-2 size-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {currentStep === 2 && (
+          <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
+            <Card className="border-[#ffffff]/10 bg-[#080808]/80">
               <CardHeader>
-                <CardTitle className="text-[#ffffff]">
-                  Étape 3 : Choix du mode d'ajout des noms
-                </CardTitle>
-                <CardDescription className="text-[#ffffff]/70">
-                  Ajoutez les noms manuellement ou importez-les depuis un
-                  fichier Excel/CSV
-                </CardDescription>
+                <CardTitle className="text-[#ffffff]">2. Configurez les champs</CardTitle>
+                <CardDescription className="text-[#ffffff]/60">La prévisualisation PDF reste en direct pendant vos ajustements.</CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="manual" className="w-full">
-                  <TabsList className="bg-[#000000]/80 border-[#ffa51f]/40">
-                    <TabsTrigger
-                      value="manual"
-                      className="data-[state=active]:bg-[#ffa51f] data-[state=active]:text-[#000000]"
-                    >
-                      Saisie manuelle
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="excel"
-                      className="data-[state=active]:bg-[#ffa51f] data-[state=active]:text-[#000000]"
-                    >
-                      Import Excel/CSV
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="manual" className="space-y-4 mt-4">
-                    <div className="space-y-3">
-                      {textFields.map((field) => (
-                        <div key={field.id} className="space-y-1">
-                          <Label className="text-[#ffffff]/80 text-sm">{field.name}</Label>
-                          <Input
-                            value={manualFieldValues[field.id] || ""}
-                            onChange={(e) =>
-                              setManualFieldValues((prev) => ({
-                                ...prev,
-                                [field.id]: e.target.value,
-                              }))
-                            }
-                            onKeyDown={(e) => e.key === "Enter" && handleAddName()}
-                            placeholder={`Texte pour ${field.name}`}
-                            className="bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff]"
-                          />
-                        </div>
-                      ))}
-                      <Button
-                        onClick={handleAddName}
-                        className="w-full bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Ajouter une ligne
-                      </Button>
-                    </div>
-
-                    {names.length > 0 && (
-                      <div className="space-y-2 max-h-64 overflow-y-auto">
-                        {names.map((item) => (
-                          <NameItemComponent
-                            key={item.id}
-                            item={item}
-                            onDelete={handleDeleteName}
-                            onEdit={handleEditName}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="excel" className="space-y-4 mt-4">
-                    <div className="border-2 border-dashed border-[#ffa51f]/60 rounded-lg p-6 text-center">
-                      <FileSpreadsheet className="w-12 h-12 mx-auto text-[#ffa51f] mb-4" />
-                      <p className="text-[#ffffff]/70 mb-4">
-                        Format : 1 colonne (mode classique) ou plusieurs colonnes (1 colonne = 1 champ de texte)
-                      </p>
-                      <Button
-                        onClick={() => excelInputRef.current?.click()}
-                        className="bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90"
-                      >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Importer un fichier .xlsx ou .csv
-                      </Button>
-                      <input
-                        ref={excelInputRef}
-                        type="file"
-                        accept=".xlsx,.csv"
-                        onChange={handleExcelUpload}
-                        className="hidden"
-                      />
-                    </div>
-
-                    {names.length > 0 && (
-                      <div className="space-y-2 max-h-64 overflow-y-auto">
-                        <p className="text-sm text-[#ffffff]/70 mb-2">
-                          {names.length} nom(s) importé(s)
-                        </p>
-                        {names.map((item) => (
-                          <NameItemComponent
-                            key={item.id}
-                            item={item}
-                            onDelete={handleDeleteName}
-                            onEdit={handleEditName}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
+                {pdfPreview ? (
+                  <iframe src={pdfPreview} className="h-[760px] w-full rounded-2xl border border-[#ffffff]/10 bg-white" title="PDF Preview" />
+                ) : (
+                  <div className="flex h-[760px] items-center justify-center rounded-2xl border border-[#ffffff]/10 bg-[#ffffff]/4 text-[#ffffff]/50">Aucun PDF chargé</div>
+                )}
               </CardContent>
             </Card>
-          </div>
 
-          {/* Colonne droite - Configuration de position */}
-          <div className="space-y-6">
-            <Card className="bg-[#000000]/80 border-[#000000]">
-              <CardHeader>
-                <CardTitle className="text-[#ffffff] flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-[#ffa51f]" />
-                  Configuration du champ sélectionné
-                </CardTitle>
-                <CardDescription className="text-[#ffffff]/70">
-                  {selectedField ? `Configurez le champ "${selectedField.name}"` : "Sélectionnez un champ pour le configurer"}
-                </CardDescription>
-              </CardHeader>
-              {selectedField ? (
-                <CardContent className="space-y-6">
-                  {/* Position Controls */}
+            <div className="space-y-4">
+              <Card className="border-[#ffffff]/10 bg-[#080808]/80">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-[#ffffff]">
+                    <Settings className="size-5 text-[#ffa51f]" />
+                    Champs dynamiques
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button onClick={() => addTextField()} className="w-full bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90">
+                    <Plus className="mr-2 size-4" />
+                    Ajouter un champ
+                  </Button>
+                  <div className="max-h-56 space-y-2 overflow-y-auto pr-1">
+                    {textFields.map((field) => (
+                      <div
+                        key={field.id}
+                        onClick={() => setSelectedFieldId(field.id)}
+                        className={`cursor-pointer rounded-2xl border p-3 transition-all ${selectedFieldId === field.id ? "border-[#ffa51f] bg-[#ffa51f]/12" : "border-[#ffffff]/10 bg-[#ffffff]/5 hover:border-[#ffa51f]/45"}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <GripVertical className="size-4 text-[#ffa51f]/70" />
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-[#ffffff]">{field.name}</p>
+                            <p className="text-xs text-[#ffffff]/45">X {field.x} • Y {field.y} • {field.fontFamily}</p>
+                          </div>
+                          <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); deleteTextField(field.id); }} disabled={textFields.length === 1} className="size-8 text-[#ffffff]/50 hover:text-red-400">
+                            <Trash2 className="size-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {selectedField && (
+                <Card className="border-[#ffffff]/10 bg-[#080808]/80">
+                  <CardHeader>
+                    <CardTitle className="text-[#ffffff]">{selectedField.name}</CardTitle>
+                    <CardDescription className="text-[#ffffff]/60">Position, police, couleur et clé de données.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-[#ffffff]/70">X</Label>
+                        <Input type="number" value={selectedField.x} onChange={(e) => updateTextField(selectedField.id, { x: parseInt(e.target.value) || 0 })} className="bg-[#000000]/70 border-[#ffffff]/10 text-[#ffffff]" />
+                      </div>
+                      <div>
+                        <Label className="text-[#ffffff]/70">Y</Label>
+                        <Input type="number" value={selectedField.y} onChange={(e) => updateTextField(selectedField.id, { y: parseInt(e.target.value) || 0 })} className="bg-[#000000]/70 border-[#ffffff]/10 text-[#ffffff]" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-[#ffffff]/70">Pas de déplacement</Label>
+                      <Input type="number" value={moveStep} onChange={(e) => setMoveStep(Math.max(1, parseInt(e.target.value) || 1))} min="1" className="bg-[#000000]/70 border-[#ffffff]/10 text-[#ffffff]" />
+                    </div>
+                    <div className="mx-auto grid w-36 grid-cols-3 gap-2">
+                      <div />
+                      <Button size="icon" variant="outline" onClick={() => moveTextField(selectedField.id, 0, -moveStep)} className="border-[#ffa51f]/40 text-[#ffffff]"><ArrowUp className="size-4" /></Button>
+                      <div />
+                      <Button size="icon" variant="outline" onClick={() => moveTextField(selectedField.id, -moveStep, 0)} className="border-[#ffa51f]/40 text-[#ffffff]"><ArrowLeft className="size-4" /></Button>
+                      <Button size="icon" variant="outline" onClick={() => moveTextField(selectedField.id, 0, moveStep)} className="border-[#ffa51f]/40 text-[#ffffff]"><ArrowDown className="size-4" /></Button>
+                      <Button size="icon" variant="outline" onClick={() => moveTextField(selectedField.id, moveStep, 0)} className="border-[#ffa51f]/40 text-[#ffffff]"><ArrowRight className="size-4" /></Button>
+                    </div>
+                    <Input value={selectedField.dataKey} onChange={(e) => updateTextField(selectedField.id, { dataKey: e.target.value })} placeholder="Clé Excel/CSV" className="bg-[#000000]/70 border-[#ffffff]/10 text-[#ffffff]" />
+                    <Input type="number" value={selectedField.fontSize} onChange={(e) => updateTextField(selectedField.id, { fontSize: parseInt(e.target.value) || 12 })} min="8" max="72" className="bg-[#000000]/70 border-[#ffffff]/10 text-[#ffffff]" />
+                    <div className="flex gap-2">
+                      <Input type="color" value={selectedField.color} onChange={(e) => updateTextField(selectedField.id, { color: e.target.value })} className="h-10 w-16 bg-[#000000]/70 border-[#ffffff]/10" />
+                      <Input value={selectedField.color} onChange={(e) => updateTextField(selectedField.id, { color: e.target.value })} className="bg-[#000000]/70 border-[#ffffff]/10 text-[#ffffff]" />
+                    </div>
+                    <select value={selectedField.fontFamily} onChange={(e) => updateTextField(selectedField.id, { fontFamily: e.target.value as FontFamily, fontWeight: "Regular" })} className="h-10 w-full rounded-md border border-[#ffffff]/10 bg-[#000000]/70 px-3 text-[#ffffff]">
+                      <option value="Montserrat">Montserrat</option>
+                      <option value="Poppins">Poppins</option>
+                      <option value="Roboto">Roboto</option>
+                      <option value="Great Vibes">Great Vibes</option>
+                    </select>
+                    <select value={selectedField.fontWeight} onChange={(e) => updateTextField(selectedField.id, { fontWeight: e.target.value as FontWeight })} disabled={selectedField.fontFamily === "Great Vibes"} className="h-10 w-full rounded-md border border-[#ffffff]/10 bg-[#000000]/70 px-3 text-[#ffffff]">
+                      {getAvailableWeights(selectedField.fontFamily).map((weight) => <option key={weight} value={weight}>{weight}</option>)}
+                    </select>
+                    <Button onClick={() => continueToStep(3)} className="w-full bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90">Continuer</Button>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 3 && (
+          <Card className="border-[#ffffff]/10 bg-[#080808]/80">
+            <CardHeader>
+              <CardTitle className="text-[#ffffff]">3. Ajoutez les participants</CardTitle>
+              <CardDescription className="text-[#ffffff]/60">Choisissez une saisie manuelle ou un import Excel/CSV intelligent.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-2">
+                <button type="button" onClick={() => setParticipantMode("manual")} className={`rounded-3xl border p-6 text-left ${participantMode === "manual" ? "border-[#ffa51f] bg-[#ffa51f]/10" : "border-[#ffffff]/10 bg-[#ffffff]/5"}`}>
+                  <Users className="mb-4 size-8 text-[#ffa51f]" />
+                  <h3 className="text-xl font-semibold">Manual Entry</h3>
+                  <p className="mt-2 text-sm text-[#ffffff]/60">Ajoutez les participants ligne par ligne.</p>
+                </button>
+                <button type="button" onClick={() => setParticipantMode("excel")} className={`rounded-3xl border p-6 text-left ${participantMode === "excel" ? "border-[#ffa51f] bg-[#ffa51f]/10" : "border-[#ffffff]/10 bg-[#ffffff]/5"}`}>
+                  <FileSpreadsheet className="mb-4 size-8 text-[#ffa51f]" />
+                  <h3 className="text-xl font-semibold">Excel/CSV Import</h3>
+                  <p className="mt-2 text-sm text-[#ffffff]/60">Détecte les colonnes, crée les champs et identifie les emails.</p>
+                </button>
+              </div>
+              {participantMode === "manual" && (
+                <div className="rounded-3xl border border-[#ffffff]/10 bg-[#ffffff]/5 p-5">
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {textFields.map((field) => (
+                      <div key={field.id}>
+                        <Label className="text-[#ffffff]/70">{field.name}</Label>
+                        <Input value={manualFieldValues[field.id] || ""} onChange={(e) => setManualFieldValues((prev) => ({ ...prev, [field.id]: e.target.value }))} onKeyDown={(e) => e.key === "Enter" && handleAddName()} className="bg-[#000000]/70 border-[#ffffff]/10 text-[#ffffff]" />
+                      </div>
+                    ))}
+                  </div>
+                  <Button onClick={handleAddName} className="mt-4 bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90"><Plus className="mr-2 size-4" />Ajouter une ligne</Button>
+                </div>
+              )}
+              {participantMode === "excel" && (
+                <div className="rounded-3xl border border-dashed border-[#ffa51f]/35 bg-[#ffffff]/5 p-6 text-center">
+                  <FileSpreadsheet className="mx-auto mb-4 size-12 text-[#ffa51f]" />
+                  <p className="mb-4 text-[#ffffff]/60">La colonne Email/Mail/E-mail est utilisée pour l'envoi et n'est pas créée comme champ PDF.</p>
+                  <Button onClick={() => excelInputRef.current?.click()} className="bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90"><Upload className="mr-2 size-4" />Importer un fichier</Button>
+                  <input ref={excelInputRef} type="file" accept=".xlsx,.csv" onChange={handleExcelUpload} className="hidden" />
+                </div>
+              )}
+              {importedColumns.length > 0 && <div className="flex flex-wrap gap-2">{importedColumns.map((col) => <span key={col} className={`rounded-full px-3 py-1 text-xs ${col === detectedEmailColumn ? "bg-[#ffa51f] text-black" : "bg-[#ffffff]/10 text-[#ffffff]/70"}`}>{col}</span>)}</div>}
+              {names.length > 0 && <div className="max-h-72 space-y-2 overflow-y-auto">{names.map((item) => <NameItemComponent key={item.id} item={item} onDelete={handleDeleteName} onEdit={handleEditName} />)}</div>}
+              <div className="flex justify-end"><Button onClick={() => continueToStep(4)} disabled={names.length === 0} className="bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90">Continuer</Button></div>
+            </CardContent>
+          </Card>
+        )}
+
+        {currentStep === 4 && (
+          <Card className="border-[#ffffff]/10 bg-[#080808]/80">
+            <CardHeader><CardTitle className="text-[#ffffff]">4. Emails optionnels</CardTitle><CardDescription className="text-[#ffffff]/60">Laissez désactivé pour conserver la génération ZIP classique.</CardDescription></CardHeader>
+            <CardContent className="space-y-5">
+              <button type="button" onClick={() => setEmailEnabled(!emailEnabled)} className={`flex w-full items-center justify-between rounded-3xl border p-5 ${emailEnabled ? "border-[#ffa51f] bg-[#ffa51f]/10" : "border-[#ffffff]/10 bg-[#ffffff]/5"}`}>
+                <span className="flex items-center gap-3"><Mail className="size-5 text-[#ffa51f]" />Enable automatic sending of certificates by email</span>
+                <span className={`h-6 w-11 rounded-full p-1 ${emailEnabled ? "bg-[#ffa51f]" : "bg-[#ffffff]/20"}`}><span className={`block size-4 rounded-full bg-black transition-transform ${emailEnabled ? "translate-x-5" : ""}`} /></span>
+              </button>
+              {emailEnabled && (
+                <div className="grid gap-5 lg:grid-cols-2">
                   <div className="space-y-4">
-                    <Label className="text-[#ffffff]">Position du texte</Label>
-                    <div className="space-y-2">
-                      <Label className="text-[#ffffff]/80 text-sm">Pas de deplacement (px)</Label>
-                      <Input
-                        type="number"
-                        value={moveStep}
-                        onChange={(e) => setMoveStep(Math.max(1, parseInt(e.target.value) || 1))}
-                        min="1"
-                        className="bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff]"
-                      />
-                    </div>
-                    
-                    {/* Arrow Controls */}
-                    <div className="flex justify-center">
-                      <div className="grid grid-cols-3 gap-2 w-32">
-                        <div />
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          onClick={() => moveTextField(selectedField.id, 0, -moveStep)}
-                          className="border-[#ffa51f]/40 text-[#ffffff] hover:bg-[#ffa51f]/20"
-                        >
-                          <ArrowUp className="w-4 h-4" />
-                        </Button>
-                        <div />
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          onClick={() => moveTextField(selectedField.id, -moveStep, 0)}
-                          className="border-[#ffa51f]/40 text-[#ffffff] hover:bg-[#ffa51f]/20"
-                        >
-                          <ArrowLeft className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          onClick={() => moveTextField(selectedField.id, 0, moveStep)}
-                          className="border-[#ffa51f]/40 text-[#ffffff] hover:bg-[#ffa51f]/20"
-                        >
-                          <ArrowDown className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          onClick={() => moveTextField(selectedField.id, moveStep, 0)}
-                          className="border-[#ffa51f]/40 text-[#ffffff] hover:bg-[#ffa51f]/20"
-                        >
-                          <ArrowRight className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <p className="text-xs text-[#ffffff]/60 text-center">
-                      Utilisez les flèches pour un deplacement precis selon le pas choisi
-                    </p>
+                    <Input value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} className="bg-[#000000]/70 border-[#ffffff]/10 text-[#ffffff]" />
+                    <textarea value={emailMessage} onChange={(e) => setEmailMessage(e.target.value)} rows={9} className="w-full rounded-md border border-[#ffffff]/10 bg-[#000000]/70 p-3 text-sm text-[#ffffff]" />
+                    <p className="text-xs text-[#ffffff]/50">Variables: {"{{last name}}"} {"{{first name}}"} {"{{email}}"} {"{{job title}}"}</p>
                   </div>
-                    <div className="space-y-2">
-                      <Label className="text-[#ffffff]">Cle de colonne (Excel/CSV)</Label>
-                      <Input
-                        value={selectedField.dataKey}
-                        onChange={(e) => updateTextField(selectedField.id, { dataKey: e.target.value })}
-                        placeholder="Ex: Prenom, Nom, Fonction"
-                        className="bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff]"
-                      />
-                    </div>
-
-
-                  {/* Text Customization */}
-                  <div className="space-y-4 pt-4 border-t border-[#000000]">
-                    <div className="space-y-2">
-                      <Label className="text-[#ffffff]">Taille du texte</Label>
-                      <Input
-                        type="number"
-                        value={selectedField.fontSize}
-                        onChange={(e) => updateTextField(selectedField.id, { fontSize: parseInt(e.target.value) || 12 })}
-                        min="8"
-                        max="72"
-                        className="bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff]"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-[#ffffff]">Couleur du texte</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          type="color"
-                          value={selectedField.color}
-                          onChange={(e) => updateTextField(selectedField.id, { color: e.target.value })}
-                          className="w-16 h-10 bg-[#000000]/70 border-[#ffa51f]/40"
-                        />
-                        <Input
-                          type="text"
-                          value={selectedField.color}
-                          onChange={(e) => updateTextField(selectedField.id, { color: e.target.value })}
-                          placeholder="#000000"
-                          className="flex-1 bg-[#000000]/70 border-[#ffa51f]/40 text-[#ffffff]"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-[#ffffff]">Police</Label>
-                      <select
-                        value={selectedField.fontFamily}
-                        onChange={(e) => updateTextField(selectedField.id, { fontFamily: e.target.value as FontFamily, fontWeight: "Regular" })}
-                        className="w-full h-9 rounded-md border border-[#ffa51f]/40 bg-[#000000]/70 px-3 text-[#ffffff] text-sm focus:outline-none focus:ring-2 focus:ring-[#ffa51f]/70"
-                      >
-                        <option value="Montserrat">Montserrat</option>
-                        <option value="Poppins">Poppins</option>
-                        <option value="Roboto">Roboto</option>
-                        <option value="Great Vibes">Great Vibes</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-[#ffffff]">Style</Label>
-                      <select
-                        value={selectedField.fontWeight}
-                        onChange={(e) => updateTextField(selectedField.id, { fontWeight: e.target.value as FontWeight })}
-                        className="w-full h-9 rounded-md border border-[#ffa51f]/40 bg-[#000000]/70 px-3 text-[#ffffff] text-sm focus:outline-none focus:ring-2 focus:ring-[#ffa51f]/70"
-                        disabled={selectedField.fontFamily === "Great Vibes"}
-                      >
-                        {getAvailableWeights(selectedField.fontFamily).map(weight => (
-                          <option key={weight} value={weight}>{weight}</option>
-                        ))}
-                      </select>
-                      {selectedField.fontFamily === "Great Vibes" && (
-                        <p className="text-xs text-[#ffffff]/60">
-                          Great Vibes ne supporte que le style Regular
-                        </p>
-                      )}
-                    </div>
+                  <div className="rounded-3xl border border-[#ffffff]/10 bg-[#ffffff]/5 p-5">
+                    <p className="mb-2 text-sm text-[#ffffff]/50">Message Preview</p>
+                    <h3 className="font-semibold text-[#ffffff]">{emailSubject}</h3>
+                    <pre className="mt-4 whitespace-pre-wrap text-sm text-[#ffffff]/70">{renderEmailPreview()}</pre>
                   </div>
-                </CardContent>
-              ) : (
-                <CardContent>
-                  <div className="text-center py-8">
-                    <p className="text-[#ffffff]/60">
-                      Sélectionnez un champ de texte pour le configurer
-                    </p>
-                  </div>
-                </CardContent>
+                </div>
               )}
-            </Card>
+              <div className="flex justify-end"><Button onClick={() => continueToStep(5)} className="bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90">Continuer</Button></div>
+            </CardContent>
+          </Card>
+        )}
 
-            {/* Bouton de génération */}
-            <Button
-              onClick={generateCertificates}
-              disabled={!pdfFile || names.length === 0 || textFields.length === 0 || isGenerating}
-              className="w-full bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90 font-medium h-12 text-base"
-            >
-              {isGenerating ? (
-                <>
-                  <span className="animate-spin mr-2">⏳</span>
-                  Génération en cours...
-                </>
-              ) : (
-                <>
-                  <Download className="w-5 h-5 mr-2" />
-                  Générer les certificats
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
+        {currentStep === 5 && (
+          <Card className="border-[#ffffff]/10 bg-[#080808]/80">
+            <CardHeader><CardTitle className="text-[#ffffff]">5. Génération finale</CardTitle><CardDescription className="text-[#ffffff]/60">Vérifiez le résumé avant de générer.</CardDescription></CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-4">
+                <div className="rounded-3xl border border-[#ffffff]/10 bg-[#ffffff]/5 p-5"><p className="text-sm text-[#ffffff]/50">PDF</p><p className="mt-2 font-semibold">{pdfFile?.name || "Aucun"}</p></div>
+                <div className="rounded-3xl border border-[#ffffff]/10 bg-[#ffffff]/5 p-5"><p className="text-sm text-[#ffffff]/50">Participants</p><p className="mt-2 text-2xl font-bold">{names.length}</p></div>
+                <div className="rounded-3xl border border-[#ffffff]/10 bg-[#ffffff]/5 p-5"><p className="text-sm text-[#ffffff]/50">Champs</p><p className="mt-2 text-2xl font-bold">{textFields.length}</p></div>
+                <div className="rounded-3xl border border-[#ffffff]/10 bg-[#ffffff]/5 p-5"><p className="text-sm text-[#ffffff]/50">Emails</p><p className="mt-2 font-semibold">{emailEnabled ? "Activé" : "Désactivé"}</p></div>
+              </div>
+              <Button onClick={generateAndMaybeSendCertificates} disabled={!pdfFile || names.length === 0 || textFields.length === 0 || isGenerating} className="h-14 w-full bg-[#ffa51f] text-base font-semibold text-[#000000] hover:bg-[#ffa51f]/90">
+                {isGenerating ? <><span className="mr-2 animate-spin">⏳</span>Génération en cours...</> : <><Download className="mr-2 size-5" />{emailEnabled ? "Generate and send certificates" : "Generate certificates"}</>}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </main>
   );
