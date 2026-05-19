@@ -1,286 +1,119 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Zap, BarChart3, Layers, ArrowRight, Command } from "lucide-react"
+import { ArrowRight, CheckCircle2, FileSpreadsheet, Mail, MousePointer2, Upload } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
-const integrationLogos = [
-  { name: "Tool 1" },
-  { name: "Tool 2" },
-  { name: "Tool 3" },
-  { name: "Tool 4" },
-  { name: "Tool 5" },
-  { name: "Tool 6" },
-  { name: "Tool 7" },
-  { name: "Tool 8" },
+const features = [
+  {
+    title: "Modèle PDF",
+    description: "Téléversez votre certificat PDF vierge et préparez-le comme base professionnelle pour toutes vos générations.",
+    icon: Upload,
+    items: ["Import PDF sécurisé", "Aperçu instantané", "Conservation du design", "Prêt pour l'export"],
+  },
+  {
+    title: "Import Excel/CSV",
+    description: "Importez vos listes de participants depuis Excel ou CSV et associez automatiquement chaque donnée aux bons champs.",
+    icon: FileSpreadsheet,
+    items: ["Colonnes détectées", "Noms en masse", "Champs multiples", "Traitement rapide"],
+  },
+  {
+    title: "Positionnement précis",
+    description: "Placez chaque texte exactement au bon endroit sur votre certificat avec un rendu fidèle et personnalisable.",
+    icon: MousePointer2,
+    items: ["Placement au pixel", "Styles personnalisés", "Polices adaptées", "Prévisualisation claire"],
+  },
+  {
+    title: "Envoi automatique",
+    description: "Envoyez automatiquement les certificats aux différents participants avec des messages personnalisés pour chacun.",
+    icon: Mail,
+    items: ["Emails personnalisés", "Envoi aux participants", "Messages individuels", "Distribution simplifiée"],
+  },
 ]
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="px-6 py-24">
-      <div className="max-w-5xl mx-auto">
+    <section id="features" className="relative overflow-hidden px-6 py-24">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,165,31,0.12),transparent_42%)]" />
+      <div className="relative mx-auto max-w-7xl">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-12"
+          className="text-center mb-14"
         >
-          <p className="text-sm font-medium text-[#ffffff]/70 uppercase tracking-wider mb-4">Fonctionnalités</p>
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-[#ffffff] mb-4">
-            Tout ce dont vous avez besoin
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#ffa51f]/20 bg-[#ffa51f]/10 px-3 py-1.5">
+            <span className="size-2 rounded-full bg-[#ffa51f] shadow-[0_0_18px_rgba(255,165,31,0.8)]" />
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#ffffff]/80">Fonctionnalités</p>
+          </div>
+          <h2 className="mx-auto mb-4 max-w-3xl font-display text-4xl font-bold tracking-[-0.04em] text-[#ffffff] md:text-5xl">
+            Tout pour générer, personnaliser et envoyer vos certificats
           </h2>
-          <p className="text-[#ffffff]/70 max-w-xl mx-auto text-balance">
-            Des fonctionnalités puissantes pour générer vos certificats rapidement et efficacement.
+          <p className="mx-auto max-w-2xl text-balance text-sm leading-relaxed text-[#ffffff]/65 md:text-base">
+            Une plateforme complète pour transformer un modèle PDF et une liste de participants en certificats professionnels prêts à partager.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-          {/* Card 1 - Analytics (wider - 3 cols) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="md:col-span-3"
-          >
-            <Card className="group h-full overflow-hidden border-[#000000]/50 bg-[#000000]/30 hover:border-[#ffa51f]/50 transition-all duration-300 rounded-2xl">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-3 mb-3">
-                  <motion.div
-                    className="w-10 h-10 rounded-xl bg-[#000000] flex items-center justify-center"
-                    whileHover={{ rotate: [0, -10, 10, 0] }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <BarChart3 className="w-5 h-5 text-[#ffa51f] group-hover:text-[#ffa51f] transition-colors" />
-                  </motion.div>
-                  <p className="font-heading font-semibold text-[#ffffff]">Upload PDF Modèle</p>
-                </div>
-                <p className="text-[#ffffff]/70 text-sm mb-5">
-                  Téléversez votre certificat PDF vierge et visualisez-le en temps réel.
-                </p>
-                <div className="rounded-xl border border-[#000000] bg-[#000000] p-4 overflow-hidden">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex gap-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <motion.div
-                        className="flex items-center gap-1.5"
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.5 }}
-                      >
-                        <div className="w-2 h-2 rounded-full bg-zinc-400" />
-                        <span className="text-xs text-zinc-500">Users</span>
-                      </motion.div>
-                      <motion.div
-                        className="flex items-center gap-1.5"
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.6 }}
-                      >
-                        <div className="w-2 h-2 rounded-full bg-zinc-600" />
-                        <span className="text-xs text-zinc-500">Revenue</span>
-                      </motion.div>
-                    </div>
-                  </div>
-                  {/* Animated metrics row */}
-                  <div className="grid grid-cols-3 gap-3 mb-4">
-                    {[
-                      { label: "Total Users", value: "12.4K", change: "+12%" },
-                      { label: "Revenue", value: "$48.2K", change: "+8%" },
-                      { label: "Conversion", value: "3.2%", change: "+2%" },
-                    ].map((metric, i) => (
-                      <motion.div
-                        key={metric.label}
-                        className="bg-zinc-900/50 rounded-lg p-2.5"
-                        initial={{ opacity: 0, y: 10 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.3 + i * 0.1 }}
-                      >
-                        <p className="text-zinc-500 text-xs mb-1">{metric.label}</p>
-                        <div className="flex items-baseline gap-1.5">
-                          <span className="text-zinc-100 font-semibold text-sm">{metric.value}</span>
-                          <motion.span
-                            className="text-zinc-400 text-xs"
-                            animate={{ opacity: [0.5, 1, 0.5] }}
-                            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                          >
-                            {metric.change}
-                          </motion.span>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                  {/* Animated bar chart */}
-                  <div className="flex items-end gap-1.5 h-16">
-                    {[35, 55, 40, 75, 50, 85, 60, 70, 45, 90, 65, 80].map((h, i) => (
-                      <motion.div
-                        key={i}
-                        className="flex-1 bg-gradient-to-t from-zinc-700 to-zinc-500 rounded-sm origin-bottom"
-                        initial={{ scaleY: 0 }}
-                        whileInView={{ scaleY: h / 100 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6, delay: 0.5 + i * 0.04, ease: "easeOut" }}
-                        whileHover={{ scaleY: 1, transition: { duration: 0.2 } }}
-                      />
-                    ))}
-                  </div>
-                  {/* Animated line underneath */}
-                  <motion.div
-                    className="h-px bg-gradient-to-r from-transparent via-zinc-600 to-transparent mt-3"
-                    initial={{ scaleX: 0 }}
-                    whileInView={{ scaleX: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 1, delay: 0.8 }}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {features.map((feature, index) => {
+            const Icon = feature.icon
 
-          {/* Card 2 - Performance (narrower - 2 cols) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="md:col-span-2"
-          >
-            <Card className="group h-full overflow-hidden border-[#000000]/50 bg-[#000000]/30 hover:border-[#ffa51f]/50 transition-all duration-300 rounded-2xl">
-              <CardContent className="p-6 flex flex-col h-full">
-                <div className="flex items-center gap-3 mb-3">
-                  <motion.div
-                    className="w-10 h-10 rounded-xl bg-[#000000] flex items-center justify-center"
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-                  >
-                    <Zap className="w-5 h-5 text-[#ffa51f] group-hover:text-[#ffa51f] transition-colors" />
-                  </motion.div>
-                  <p className="font-heading font-semibold text-[#ffffff]">Génération Rapide</p>
-                </div>
-                <p className="text-[#ffffff]/70 text-sm mb-5">Générez des centaines de certificats en quelques secondes.</p>
-                <div className="mt-auto">
-                  <div className="flex items-baseline gap-2 mb-3">
-                    <motion.span
-                      className="text-4xl font-display font-bold text-[#ffa51f]"
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                    >
-                      100+
-                    </motion.span>
-                    <span className="text-[#ffffff]/70 text-sm">certificats/min</span>
-                  </div>
-                  <div className="h-2 bg-[#000000] rounded-full overflow-hidden">
+            return (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
+              >
+                <Card className="group relative h-full overflow-hidden rounded-2xl border-[#ffffff]/10 bg-[#020202]/70 shadow-[0_20px_80px_rgba(0,0,0,0.35)] transition-all duration-300 hover:-translate-y-1 hover:border-[#ffa51f]/45">
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ffa51f]/70 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  <div className="pointer-events-none absolute -right-16 -top-16 size-36 rounded-full bg-[#ffa51f]/10 blur-3xl transition-opacity duration-300 group-hover:opacity-100" />
+                  <CardContent className="relative flex h-full flex-col p-6">
                     <motion.div
-                      className="h-full bg-gradient-to-r from-[#ffa51f] to-[#ffa51f] rounded-full"
-                      initial={{ width: "0%" }}
-                      whileInView={{ width: "100%" }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1.5, delay: 0.3, ease: "easeOut" }}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Card 3 - Keyboard shortcuts (narrower - 2 cols) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="md:col-span-2"
-          >
-            <Card className="group h-full overflow-hidden border-[#000000]/50 bg-[#000000]/30 hover:border-[#ffa51f]/50 transition-all duration-300 rounded-2xl">
-              <CardContent className="p-6 flex flex-col h-full">
-                <div className="flex items-center gap-3 mb-3">
-                  <motion.div
-                    className="w-10 h-10 rounded-xl bg-[#000000] flex items-center justify-center"
-                    whileHover={{ y: -2 }}
-                  >
-                    <Command className="w-5 h-5 text-[#ffa51f] group-hover:text-[#ffa51f] transition-colors" />
-                  </motion.div>
-                  <p className="font-heading font-semibold text-[#ffffff]">Import Excel/CSV</p>
-                </div>
-                <p className="text-[#ffffff]/70 text-sm mb-5">Importez vos listes de noms depuis Excel ou CSV en un clic.</p>
-                <div className="flex justify-center gap-2 mt-auto">
-                  {["⌘", "K"].map((key, i) => (
-                    <motion.div
-                      key={key}
-                      className="flex items-center justify-center w-12 h-12 rounded-xl bg-[#000000]/80 border border-[#ffa51f]/50 shadow-lg"
-                      initial={{ y: 0 }}
-                      animate={{ y: [0, -4, 0] }}
-                      transition={{
-                        duration: 1.5,
-                        delay: i * 0.15,
-                        repeat: Number.POSITIVE_INFINITY,
-                        repeatDelay: 2,
-                      }}
-                      whileHover={{ scale: 1.1, y: -4 }}
+                      className="mb-8 flex size-12 items-center justify-center rounded-2xl border border-[#ffa51f]/20 bg-[#ffa51f]/10 shadow-[0_0_35px_rgba(255,165,31,0.12)]"
+                      whileHover={{ rotate: [0, -8, 8, 0], scale: 1.06 }}
+                      transition={{ duration: 0.5 }}
                     >
-                      <span className="text-[#ffa51f] font-mono text-lg">{key}</span>
+                      <Icon className="size-6 text-[#ffa51f]" />
                     </motion.div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
 
-          {/* Card 4 - Integrations (wider - 3 cols) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="md:col-span-3"
-          >
-            <Card className="group h-full overflow-hidden border-[#000000]/50 bg-[#000000]/30 hover:border-[#ffa51f]/50 transition-all duration-300 rounded-2xl">
-              <CardContent className="p-6 flex flex-col h-full">
-                <div className="flex items-center gap-3 mb-3">
-                  <motion.div
-                    className="w-10 h-10 rounded-xl bg-[#000000] flex items-center justify-center"
-                    whileHover={{ rotate: 180 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <Layers className="w-5 h-5 text-[#ffa51f] group-hover:text-[#ffa51f] transition-colors" />
-                  </motion.div>
-                  <p className="font-heading font-semibold text-[#ffffff]">Position Personnalisable</p>
-                </div>
-                <p className="text-[#ffffff]/70 text-sm mb-5">Choisissez précisément où placer le nom sur votre certificat.</p>
-                <div className="grid grid-cols-8 gap-2 mt-auto">
-                  {integrationLogos.map((logo, i) => (
+                    <h3 className="mb-3 font-display text-xl font-semibold leading-tight text-[#ffffff]">
+                      {feature.title}
+                    </h3>
+                    <p className="mb-6 text-sm leading-relaxed text-[#ffffff]/62">
+                      {feature.description}
+                    </p>
+
+                    <div className="mt-auto space-y-3">
+                      {feature.items.map((item, itemIndex) => (
+                        <motion.div
+                          key={item}
+                          className="flex items-center gap-2 text-xs text-[#ffffff]/68"
+                          initial={{ opacity: 0, x: -8 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.35, delay: 0.25 + index * 0.08 + itemIndex * 0.05 }}
+                        >
+                          <CheckCircle2 className="size-3.5 text-[#ffa51f]" />
+                          <span>{item}</span>
+                        </motion.div>
+                      ))}
+                    </div>
+
                     <motion.div
-                      key={logo.name}
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.3, delay: 0.3 + i * 0.05 }}
-                      whileHover={{ scale: 1.15, y: -2 }}
-                      className="aspect-square rounded-lg border border-[#000000] bg-[#000000]/50 flex items-center justify-center cursor-pointer"
+                      whileHover={{ x: 6 }}
+                      className="mt-7 inline-flex items-center gap-1.5 text-sm font-medium text-[#ffffff]/60 transition-colors group-hover:text-[#ffa51f]"
                     >
-                      <div className="w-5 h-5 rounded bg-[#ffa51f]/30" />
+                      En savoir plus <ArrowRight className="size-4" />
                     </motion.div>
-                  ))}
-                </div>
-                <motion.button
-                  whileHover={{ x: 6 }}
-                  className="mt-4 flex items-center gap-1.5 text-sm text-[#ffffff]/70 hover:text-[#ffa51f] transition-colors"
-                >
-                  Voir toutes les options <ArrowRight className="w-4 h-4" />
-                </motion.button>
-              </CardContent>
-            </Card>
-          </motion.div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )
+          })}
         </div>
       </div>
     </section>

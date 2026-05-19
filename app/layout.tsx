@@ -12,7 +12,7 @@ const manrope = Manrope({
 })
 
 export const metadata: Metadata = {
-  title: "Certificats Pro | Génération automatique de certificats PDF",
+  title: "AfroCertify | Génération automatique de certificats PDF",
   description:
     "Générez automatiquement des certificats PDF personnalisés à partir d'un modèle et d'une liste de noms. Parfait pour les formations, ONG, écoles et séminaires.",
   generator: "Next.js",
