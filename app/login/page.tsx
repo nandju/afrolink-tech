@@ -27,17 +27,19 @@ export default function LoginPage() {
     // Check if email contains "admin" to redirect to admin space
     const isAdmin = email.toLowerCase().includes("admin")
     document.cookie = "authenticated=true; path=/; max-age=86400"
+    sessionStorage.setItem("authenticated", "true")
     
     if (isAdmin) {
       router.push("/admin")
     } else {
-      router.push("/dashboard")
+      router.push("/client/dashboard")
     }
   }
 
   const handleGoogleLogin = () => {
     document.cookie = "authenticated=true; path=/; max-age=86400"
-    router.push("/dashboard")
+    sessionStorage.setItem("authenticated", "true")
+    router.push("/client/dashboard")
   }
 
   return (

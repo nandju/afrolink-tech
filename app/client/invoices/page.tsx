@@ -53,32 +53,32 @@ export default function InvoicesPage() {
   }, 0)
 
   return (
-    <div className="flex min-h-screen bg-[#000000]">
+    <div className="flex min-h-screen bg-[#FAFAFA]">
       <ClientSidebar />
       
       <main className="ml-64 flex-1 p-8">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-7xl">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="font-heading text-4xl font-bold text-white mb-2">
+            <h1 className="font-heading text-4xl font-bold text-[#1E1E1E] mb-2">
               Factures
             </h1>
-            <p className="text-[#ffffff]/70">
+            <p className="text-[#6B7280]">
               Consultez et téléchargez vos factures
             </p>
           </div>
 
           {/* Search */}
-          <Card className="mb-6 border-[#ffffff]/10 bg-[#0a0a0a]">
+          <Card className="mb-6 border-[#E5E7EB] bg-white shadow-sm">
             <CardContent className="p-6">
               <div className="relative max-w-md">
-                <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#ffffff]/50" />
+                <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6B7280]" />
                 <Input
                   type="text"
                   placeholder="Rechercher par numéro ou description..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-[#000000]/70 border-[#ffffff]/10 text-white placeholder:text-[#ffffff]/50"
+                  className="pl-10 h-11 border-[#E5E7EB] focus:border-[#D68C2D] focus:ring-[#D68C2D] placeholder:text-[#6B7280]"
                 />
               </div>
             </CardContent>
@@ -86,40 +86,40 @@ export default function InvoicesPage() {
 
           {/* Statistics */}
           <div className="grid gap-6 md:grid-cols-3 mb-6">
-            <Card className="border-[#ffffff]/10 bg-[#0a0a0a]">
+            <Card className="border-[#E5E7EB] bg-white shadow-sm transition-all hover:shadow-md">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-[#ffffff]/60">Total factures</p>
-                    <p className="text-3xl font-bold text-white mt-1">{invoices.length}</p>
+                    <p className="text-sm font-medium text-[#6B7280]">Total factures</p>
+                    <p className="text-3xl font-bold text-[#1E1E1E] mt-1">{invoices.length}</p>
                   </div>
-                  <div className="p-3 rounded-xl bg-[#ffa51f]/10">
-                    <FileText className="h-6 w-6 text-[#ffa51f]" />
+                  <div className="p-3 rounded-xl bg-[#D68C2D]/10">
+                    <FileText className="h-6 w-6 text-[#D68C2D]" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-[#ffffff]/10 bg-[#0a0a0a]">
+            <Card className="border-[#E5E7EB] bg-white shadow-sm transition-all hover:shadow-md">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-[#ffffff]/60">Montant total</p>
-                    <p className="text-3xl font-bold text-white mt-1">{totalAmount.toLocaleString()} FCFA</p>
+                    <p className="text-sm font-medium text-[#6B7280]">Montant total</p>
+                    <p className="text-3xl font-bold text-[#1E1E1E] mt-1">{totalAmount.toLocaleString()} FCFA</p>
                   </div>
-                  <div className="p-3 rounded-xl bg-green-500/10">
-                    <CreditCard className="h-6 w-6 text-green-500" />
+                  <div className="p-3 rounded-xl bg-[#10B981]/10">
+                    <CreditCard className="h-6 w-6 text-[#10B981]" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-[#ffffff]/10 bg-[#0a0a0a]">
+            <Card className="border-[#E5E7EB] bg-white shadow-sm transition-all hover:shadow-md">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-[#ffffff]/60">Cette année</p>
-                    <p className="text-3xl font-bold text-white mt-1">2024</p>
+                    <p className="text-sm font-medium text-[#6B7280]">Cette année</p>
+                    <p className="text-3xl font-bold text-[#1E1E1E] mt-1">2024</p>
                   </div>
                   <div className="p-3 rounded-xl bg-[#12A2AC]/10">
                     <Calendar className="h-6 w-6 text-[#12A2AC]" />
@@ -130,10 +130,10 @@ export default function InvoicesPage() {
           </div>
 
           {/* Invoices Table */}
-          <Card className="border-[#ffffff]/10 bg-[#0a0a0a]">
+          <Card className="border-[#E5E7EB] bg-white shadow-sm">
             <CardHeader>
-              <CardTitle className="text-white">Toutes les factures</CardTitle>
-              <CardDescription className="text-[#ffffff]/60">
+              <CardTitle className="font-heading text-2xl font-bold text-[#1E1E1E]">Toutes les factures</CardTitle>
+              <CardDescription className="text-[#6B7280]">
                 {filteredInvoices.length} facture{filteredInvoices.length > 1 ? "s" : ""}
               </CardDescription>
             </CardHeader>
@@ -141,29 +141,29 @@ export default function InvoicesPage() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-[#ffffff]/10">
-                      <th className="pb-3 text-left text-sm font-semibold text-[#ffffff]/70">Numéro</th>
-                      <th className="pb-3 text-left text-sm font-semibold text-[#ffffff]/70">Date</th>
-                      <th className="pb-3 text-left text-sm font-semibold text-[#ffffff]/70">Description</th>
-                      <th className="pb-3 text-left text-sm font-semibold text-[#ffffff]/70">Montant</th>
-                      <th className="pb-3 text-left text-sm font-semibold text-[#ffffff]/70">Statut</th>
-                      <th className="pb-3 text-left text-sm font-semibold text-[#ffffff]/70">Actions</th>
+                    <tr className="border-b border-[#E5E7EB]">
+                      <th className="pb-3 text-left text-sm font-semibold text-[#6B7280]">Numéro</th>
+                      <th className="pb-3 text-left text-sm font-semibold text-[#6B7280]">Date</th>
+                      <th className="pb-3 text-left text-sm font-semibold text-[#6B7280]">Description</th>
+                      <th className="pb-3 text-left text-sm font-semibold text-[#6B7280]">Montant</th>
+                      <th className="pb-3 text-left text-sm font-semibold text-[#6B7280]">Statut</th>
+                      <th className="pb-3 text-left text-sm font-semibold text-[#6B7280]">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredInvoices.map((invoice) => (
-                      <tr key={invoice.id} className="border-b border-[#ffffff]/5 hover:bg-[#ffffff]/5 transition-colors">
-                        <td className="py-4 text-sm font-medium text-white">{invoice.number}</td>
-                        <td className="py-4 text-sm text-[#ffffff]/80">
+                      <tr key={invoice.id} className="border-b border-[#E5E7EB] hover:bg-[#FAFAFA] transition-colors">
+                        <td className="py-4 text-sm font-medium text-[#1E1E1E]">{invoice.number}</td>
+                        <td className="py-4 text-sm text-[#6B7280]">
                           {new Date(invoice.date).toLocaleDateString("fr-FR")}
                         </td>
-                        <td className="py-4 text-sm text-[#ffffff]/80">{invoice.description}</td>
-                        <td className="py-4 text-sm font-semibold text-white">{invoice.amount}</td>
+                        <td className="py-4 text-sm text-[#6B7280]">{invoice.description}</td>
+                        <td className="py-4 text-sm font-semibold text-[#1E1E1E]">{invoice.amount}</td>
                         <td className="py-4">
-                          <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
+                          <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${
                             invoice.status === "paid" 
-                              ? "bg-green-500/10 text-green-500" 
-                              : "bg-yellow-500/10 text-yellow-500"
+                              ? "bg-[#10B981]/10 text-[#10B981]" 
+                              : "bg-[#F59E0B]/10 text-[#F59E0B]"
                           }`}>
                             {invoice.status === "paid" ? "Payée" : "En attente"}
                           </span>
@@ -171,7 +171,7 @@ export default function InvoicesPage() {
                         <td className="py-4">
                           <Button
                             size="sm"
-                            className="bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90"
+                            className="bg-[#D68C2D] text-white hover:bg-[#D68C2D]/90"
                             onClick={() => window.open(invoice.pdfUrl, "_blank")}
                           >
                             <Download className="mr-2 h-4 w-4" />
@@ -186,8 +186,8 @@ export default function InvoicesPage() {
 
               {filteredInvoices.length === 0 && (
                 <div className="py-12 text-center">
-                  <FileText className="mx-auto h-12 w-12 text-[#ffffff]/30 mb-4" />
-                  <p className="text-[#ffffff]/60">Aucune facture trouvée</p>
+                  <FileText className="mx-auto h-12 w-12 text-[#6B7280]/30 mb-4" />
+                  <p className="text-[#6B7280]">Aucune facture trouvée</p>
                 </div>
               )}
             </CardContent>

@@ -118,60 +118,60 @@ export default function SupportPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#000000]">
+    <div className="flex min-h-screen bg-[#FAFAFA]">
       <ClientSidebar />
       
       <main className="ml-64 flex-1 p-8">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-7xl">
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
             <div>
-              <h1 className="font-heading text-4xl font-bold text-white mb-2">
+              <h1 className="font-heading text-4xl font-bold text-[#1E1E1E] mb-2">
                 Support
               </h1>
-              <p className="text-[#ffffff]/70">
+              <p className="text-[#6B7280]">
                 Créez et suivez vos tickets de support
               </p>
             </div>
             <Button
               onClick={() => setShowNewTicket(!showNewTicket)}
-              className="bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90"
+              className="bg-gradient-to-r from-[#D68C2D] to-[#12A2AC] text-white hover:shadow-lg transition-all"
             >
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-5 w-5" />
               Nouveau ticket
             </Button>
           </div>
 
           {/* New Ticket Form */}
           {showNewTicket && (
-            <Card className="border-[#ffffff]/10 bg-[#0a0a0a] mb-6">
+            <Card className="border-[#E5E7EB] bg-white shadow-sm mb-6">
               <CardHeader>
-                <CardTitle className="text-white">Créer un nouveau ticket</CardTitle>
-                <CardDescription className="text-[#ffffff]/60">
-                  Décrivez votre problème ou votre question
+                <CardTitle className="font-heading text-2xl font-bold text-[#1E1E1E]">Créer un nouveau ticket</CardTitle>
+                <CardDescription className="text-[#6B7280]">
+                  Décrivez votre problème ou votre question en détail
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleCreateTicket} className="space-y-4">
+                <form onSubmit={handleCreateTicket} className="space-y-5">
                   <div className="space-y-2">
-                    <Label htmlFor="subject" className="text-[#ffffff]/80">Sujet</Label>
+                    <Label htmlFor="subject" className="text-sm font-medium text-[#1E1E1E]">Sujet</Label>
                     <Input
                       id="subject"
                       value={newTicket.subject}
                       onChange={(e) => setNewTicket({ ...newTicket, subject: e.target.value })}
                       placeholder="Décrivez brièvement votre demande"
-                      className="bg-[#000000]/70 border-[#ffffff]/10 text-white"
+                      className="h-11 border-[#E5E7EB] focus:border-[#D68C2D] focus:ring-[#D68C2D]"
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="priority" className="text-[#ffffff]/80">Priorité</Label>
+                    <Label htmlFor="priority" className="text-sm font-medium text-[#1E1E1E]">Priorité</Label>
                     <select
                       id="priority"
                       value={newTicket.priority}
                       onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value })}
-                      className="w-full rounded-lg border border-[#ffffff]/10 bg-[#000000]/70 px-3 py-2 text-white"
+                      className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-[#1E1E1E] focus:border-[#D68C2D] focus:outline-none focus:ring-2 focus:ring-[#D68C2D]/20"
                     >
                       <option value="low">Basse</option>
                       <option value="medium">Moyenne</option>
@@ -180,28 +180,28 @@ export default function SupportPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="message" className="text-[#ffffff]/80">Message</Label>
+                    <Label htmlFor="message" className="text-sm font-medium text-[#1E1E1E]">Message</Label>
                     <textarea
                       id="message"
                       value={newTicket.message}
                       onChange={(e) => setNewTicket({ ...newTicket, message: e.target.value })}
                       rows={6}
                       placeholder="Décrivez votre problème en détail..."
-                      className="w-full rounded-lg border border-[#ffffff]/10 bg-[#000000]/70 p-3 text-white placeholder:text-[#ffffff]/50 resize-none"
+                      className="w-full rounded-xl border border-[#E5E7EB] bg-white p-4 text-[#1E1E1E] placeholder:text-[#6B7280] resize-none focus:border-[#D68C2D] focus:outline-none focus:ring-2 focus:ring-[#D68C2D]/20"
                       required
                     />
                   </div>
 
                   <div className="flex gap-3">
-                    <Button type="submit" className="bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90">
-                      <Send className="mr-2 h-4 w-4" />
-                      Envoyer
+                    <Button type="submit" className="h-11 bg-gradient-to-r from-[#D68C2D] to-[#12A2AC] text-white hover:shadow-lg transition-all">
+                      <Send className="mr-2 h-5 w-5" />
+                      Envoyer le ticket
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() => setShowNewTicket(false)}
-                      className="border-[#ffffff]/10 text-white hover:bg-[#ffffff]/10"
+                      className="h-11 border-[#E5E7EB] text-[#1E1E1E] hover:bg-[#FAFAFA]"
                     >
                       Annuler
                     </Button>
@@ -213,49 +213,49 @@ export default function SupportPage() {
 
           {/* Tickets Statistics */}
           <div className="grid gap-6 md:grid-cols-3 mb-6">
-            <Card className="border-[#ffffff]/10 bg-[#0a0a0a]">
+            <Card className="border-[#E5E7EB] bg-white shadow-sm transition-all hover:shadow-md">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-[#ffffff]/60">Tickets ouverts</p>
-                    <p className="text-3xl font-bold text-white mt-1">
+                    <p className="text-sm font-medium text-[#6B7280]">Tickets ouverts</p>
+                    <p className="text-3xl font-bold text-[#1E1E1E] mt-1">
                       {tickets.filter(t => t.status === "open" || t.status === "in_progress").length}
                     </p>
                   </div>
-                  <div className="p-3 rounded-xl bg-yellow-500/10">
-                    <AlertCircle className="h-6 w-6 text-yellow-500" />
+                  <div className="p-3 rounded-xl bg-[#F59E0B]/10">
+                    <AlertCircle className="h-6 w-6 text-[#F59E0B]" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-[#ffffff]/10 bg-[#0a0a0a]">
+            <Card className="border-[#E5E7EB] bg-white shadow-sm transition-all hover:shadow-md">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-[#ffffff]/60">En cours</p>
-                    <p className="text-3xl font-bold text-white mt-1">
+                    <p className="text-sm font-medium text-[#6B7280]">En cours</p>
+                    <p className="text-3xl font-bold text-[#1E1E1E] mt-1">
                       {tickets.filter(t => t.status === "in_progress").length}
                     </p>
                   </div>
-                  <div className="p-3 rounded-xl bg-blue-500/10">
-                    <Clock className="h-6 w-6 text-blue-500" />
+                  <div className="p-3 rounded-xl bg-[#12A2AC]/10">
+                    <Clock className="h-6 w-6 text-[#12A2AC]" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-[#ffffff]/10 bg-[#0a0a0a]">
+            <Card className="border-[#E5E7EB] bg-white shadow-sm transition-all hover:shadow-md">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-[#ffffff]/60">Résolus</p>
-                    <p className="text-3xl font-bold text-white mt-1">
+                    <p className="text-sm font-medium text-[#6B7280]">Résolus</p>
+                    <p className="text-3xl font-bold text-[#1E1E1E] mt-1">
                       {tickets.filter(t => t.status === "resolved").length}
                     </p>
                   </div>
-                  <div className="p-3 rounded-xl bg-green-500/10">
-                    <CheckCircle2 className="h-6 w-6 text-green-500" />
+                  <div className="p-3 rounded-xl bg-[#10B981]/10">
+                    <CheckCircle2 className="h-6 w-6 text-[#10B981]" />
                   </div>
                 </div>
               </CardContent>
@@ -263,10 +263,10 @@ export default function SupportPage() {
           </div>
 
           {/* Tickets List */}
-          <Card className="border-[#ffffff]/10 bg-[#0a0a0a]">
+          <Card className="border-[#E5E7EB] bg-white shadow-sm">
             <CardHeader>
-              <CardTitle className="text-white">Mes tickets</CardTitle>
-              <CardDescription className="text-[#ffffff]/60">
+              <CardTitle className="font-heading text-2xl font-bold text-[#1E1E1E]">Mes tickets</CardTitle>
+              <CardDescription className="text-[#6B7280]">
                 {tickets.length} ticket{tickets.length > 1 ? "s" : ""} au total
               </CardDescription>
             </CardHeader>
@@ -275,20 +275,20 @@ export default function SupportPage() {
                 {tickets.map((ticket) => (
                   <div
                     key={ticket.id}
-                    className="flex items-center justify-between p-4 rounded-lg border border-[#ffffff]/10 bg-[#000000]/50 hover:bg-[#ffffff]/5 transition-colors cursor-pointer"
+                    className="flex items-center justify-between p-5 rounded-xl border border-[#E5E7EB] bg-white hover:border-[#D68C2D]/30 hover:shadow-md transition-all cursor-pointer"
                   >
                     <div className="flex items-center gap-4 flex-1">
-                      <div className="p-3 rounded-xl bg-[#ffa51f]/10">
-                        <MessageSquare className="h-5 w-5 text-[#ffa51f]" />
+                      <div className="p-3 rounded-xl bg-[#D68C2D]/10">
+                        <MessageSquare className="h-6 w-6 text-[#D68C2D]" />
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-1">
-                          <h3 className="font-semibold text-white">{ticket.subject}</h3>
-                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${getPriorityColor(ticket.priority)}`}>
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="font-semibold text-[#1E1E1E]">{ticket.subject}</h3>
+                          <span className={`text-xs font-medium px-3 py-1 rounded-full ${getPriorityColor(ticket.priority)}`}>
                             {getPriorityLabel(ticket.priority)}
                           </span>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-[#ffffff]/60">
+                        <div className="flex items-center gap-4 text-sm text-[#6B7280]">
                           <span>Créé le {new Date(ticket.date).toLocaleDateString("fr-FR")}</span>
                           <span>•</span>
                           <span>{ticket.messages} message{ticket.messages > 1 ? "s" : ""}</span>
@@ -300,11 +300,11 @@ export default function SupportPage() {
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
                         {getStatusIcon(ticket.status)}
-                        <span className="text-sm text-[#ffffff]/80">{getStatusLabel(ticket.status)}</span>
+                        <span className="text-sm font-medium text-[#6B7280]">{getStatusLabel(ticket.status)}</span>
                       </div>
                       <Button
                         size="sm"
-                        className="bg-[#ffa51f] text-[#000000] hover:bg-[#ffa51f]/90"
+                        className="bg-[#D68C2D] text-white hover:bg-[#D68C2D]/90"
                       >
                         Voir
                       </Button>
@@ -315,9 +315,9 @@ export default function SupportPage() {
 
               {tickets.length === 0 && (
                 <div className="py-12 text-center">
-                  <MessageSquare className="mx-auto h-12 w-12 text-[#ffffff]/30 mb-4" />
-                  <p className="text-[#ffffff]/60">Aucun ticket pour le moment</p>
-                  <p className="text-sm text-[#ffffff]/40 mt-2">
+                  <MessageSquare className="mx-auto h-12 w-12 text-[#6B7280]/30 mb-4" />
+                  <p className="text-[#6B7280]">Aucun ticket pour le moment</p>
+                  <p className="text-sm text-[#6B7280]/70 mt-2">
                     Créez un ticket si vous avez besoin d'aide
                   </p>
                 </div>
