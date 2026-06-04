@@ -52,14 +52,13 @@ export default function RootLayout({
         <LenisProvider>{children}</LenisProvider>
         <Toaster
           position="top-center"
-          richColors
           toastOptions={{
             className:
-              "bg-[#000000] text-[#ffffff] border border-[#ffa51f] shadow-lg rounded-xl",
+              "bg-white text-[#1E1E1E] border border-[#E5E7EB] shadow-xl rounded-xl font-sans",
             style: {
-              backgroundColor: "#000000",
-              color: "#ffffff",
-              borderColor: "#ffa51f",
+              backgroundColor: "#FFFFFF",
+              color: "#1E1E1E",
+              borderColor: "#E5E7EB",
             },
           }}
         />

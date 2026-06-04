@@ -10,6 +10,8 @@ interface TextField {
   y: number
   fontSize: number
   color: string
+  fontFamily?: string
+  fontWeight?: string
 }
 
 interface InteractivePdfPreviewProps {
@@ -148,8 +150,16 @@ export function InteractivePdfPreview({
                 style={{ cursor: isDraggingThis ? "grabbing" : "grab" }}
               >
                 <Move className={`h-4 w-4 ${isSelected ? "text-white" : "text-[#12A2AC]"}`} />
-                <span className="text-sm font-semibold whitespace-nowrap">
-                  {field.name}
+                <span
+                  className="font-semibold whitespace-nowrap"
+                  style={{
+                    fontFamily: field.fontFamily || "Montserrat",
+                    fontSize: `${field.fontSize || 24}px`,
+                    color: field.color || "#000000",
+                    fontWeight: field.fontWeight === "Bold" ? 700 : field.fontWeight === "SemiBold" ? 600 : 400,
+                  }}
+                >
+                  KOUADIO JEAN-MARC
                 </span>
               </div>
 
