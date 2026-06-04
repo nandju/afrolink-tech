@@ -1,9 +1,12 @@
 import Link from "next/link"
 
 const footerLinks = [
-  { label: "Fonctionnalités", href: "#features" },
-  { label: "Workflow", href: "#workflow" },
-  { label: "Accéder à l'outil", href: "/login" },
+  { label: "Accueil", href: "/" },
+  { label: "Tarifs", href: "/#pricing" },
+  { label: "Aide", href: "/help" },
+  { label: "Contact", href: "/contact" },
+  { label: "Connexion", href: "/login" },
+  { label: "Inscription", href: "/register" },
 ]
 
 export function FooterSection() {
@@ -12,11 +15,12 @@ export function FooterSection() {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col items-center justify-between gap-6 text-center md:flex-row md:text-left">
           <div>
-            <Link href="/" className="font-display text-xl font-semibold text-[#ffffff]">
-              AfroCertify
+            <Link href="/" className="flex items-center gap-2 font-heading text-xl font-bold text-[var(--color-primary)]">
+              <img src="/logo/icone_orange.png" alt="PROUV Logo" className="h-8 w-8 rounded bg-white p-1 shadow-md" />
+              PROUV
             </Link>
             <p className="mt-2 max-w-md text-sm text-[#ffffff]/55">
-              Générez, personnalisez et envoyez vos certificats en masse avec AL Tech.
+              Générez, personnalisez et envoyez vos certificats en quelques secondes avec PROUV.
             </p>
           </div>
 
@@ -34,7 +38,7 @@ export function FooterSection() {
         </div>
 
         <p className="mt-8 border-t border-[#ffffff]/10 pt-6 text-center text-sm text-[#ffffff]/40">
-          © {new Date().getFullYear()} AL Tech. Tous droits réservés.
+          © 2026 PROUV. Tous droits réservés.
         </p>
       </div>
     </footer>

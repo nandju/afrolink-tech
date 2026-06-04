@@ -6,28 +6,40 @@ import { Card, CardContent } from "@/components/ui/card"
 
 const features = [
   {
-    title: "Modèle PDF",
-    description: "Téléversez votre certificat PDF vierge et préparez-le comme base professionnelle pour toutes vos générations.",
+    title: "Génération PDF",
+    description: "Téléversez votre modèle de certificat vierge et générez des PDFs professionnels instantanément.",
     icon: Upload,
-    items: ["Import PDF sécurisé", "Aperçu instantané", "Conservation du design", "Prêt pour l'export"],
+    items: ["Import PDF sécurisé", "Aperçu en temps réel", "Préservation du design", "Prêt à exporter"],
   },
   {
-    title: "Import Excel/CSV",
-    description: "Importez vos listes de participants depuis Excel ou CSV et associez automatiquement chaque donnée aux bons champs.",
+    title: "Import Excel",
+    description: "Importez vos listes de participants depuis Excel ou CSV. Mappez les données aux champs automatiquement.",
     icon: FileSpreadsheet,
-    items: ["Colonnes détectées", "Noms en masse", "Champs multiples", "Traitement rapide"],
+    items: ["Détection intelligente des colonnes", "Import en masse", "Mappage multi-champs", "Traitement rapide"],
   },
   {
-    title: "Positionnement précis",
-    description: "Placez chaque texte exactement au bon endroit sur votre certificat avec un rendu fidèle et personnalisable.",
-    icon: MousePointer2,
-    items: ["Placement au pixel", "Styles personnalisés", "Polices adaptées", "Prévisualisation claire"],
-  },
-  {
-    title: "Envoi automatique",
-    description: "Envoyez automatiquement les certificats aux différents participants avec des messages personnalisés pour chacun.",
+    title: "Envoi d'emails",
+    description: "Envoyez automatiquement les certificats à tous les participants avec des messages personnalisés.",
     icon: Mail,
-    items: ["Emails personnalisés", "Envoi aux participants", "Messages individuels", "Distribution simplifiée"],
+    items: ["Emails personnalisés", "Envoi en masse", "Modèles de messages", "Distribution facile"],
+  },
+  {
+    title: "Historique",
+    description: "Accédez à votre historique de génération et d'envoi à tout moment.",
+    icon: CheckCircle2,
+    items: ["Journal d'activité complet", "Téléchargement ZIP", "Suivi du statut", "Enregistrements détaillés"],
+  },
+  {
+    title: "Gestion des crédits",
+    description: "Surveillez et gérez vos crédits pour la génération de certificats.",
+    icon: ArrowRight,
+    items: ["Solde en temps réel", "Analytiques d'utilisation", "Historique d'achats", "Forfaits flexibles"],
+  },
+  {
+    title: "Personnalisation avancée",
+    description: "Ajustez finement les champs, polices et positionnement pour un résultat parfait.",
+    icon: MousePointer2,
+    items: ["Glisser-déposer les champs", "Options de police et couleur", "Ajustements en direct", "Contrôles pro"],
   },
 ]
 
@@ -44,19 +56,19 @@ export function FeaturesSection() {
           transition={{ duration: 0.5 }}
           className="text-center mb-14"
         >
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#ffa51f]/20 bg-[#ffa51f]/10 px-3 py-1.5">
-            <span className="size-2 rounded-full bg-[#ffa51f] shadow-[0_0_18px_rgba(255,165,31,0.8)]" />
-            <p className="text-xs font-semibold uppercase tracking-wider text-[#ffffff]/80">Fonctionnalités</p>
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--color-primary)]/20 bg-[var(--color-primary)]/10 px-3 py-1.5">
+            <span className="size-2 rounded-full bg-[var(--color-primary)] shadow-[0_0_18px_rgba(214,140,45,0.8)]" />
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text)]/80">Fonctionnalités</p>
           </div>
-          <h2 className="mx-auto mb-4 max-w-3xl font-display text-4xl font-bold tracking-[-0.04em] text-[#ffffff] md:text-5xl">
-            Tout pour générer, personnaliser et envoyer vos certificats
+          <h2 className="mx-auto mb-4 max-w-3xl font-heading text-4xl font-bold tracking-[-0.04em] text-[var(--color-text)] md:text-5xl">
+            Tout ce dont vous avez besoin pour générer, personnaliser et envoyer vos certificats
           </h2>
-          <p className="mx-auto max-w-2xl text-balance text-sm leading-relaxed text-[#ffffff]/65 md:text-base">
-            Une plateforme complète pour transformer un modèle PDF et une liste de participants en certificats professionnels prêts à partager.
+          <p className="mx-auto max-w-2xl text-balance text-sm leading-relaxed text-[var(--color-text)]/65 md:text-base">
+            Une plateforme complète pour transformer votre modèle PDF et votre liste de participants en certificats professionnels prêts à partager en quelques secondes.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
           {features.map((feature, index) => {
             const Icon = feature.icon
 
@@ -68,7 +80,7 @@ export function FeaturesSection() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: 0.1 + index * 0.1 }}
               >
-                <Card className="group relative h-full overflow-hidden rounded-2xl border-[#ffffff]/10 bg-[#020202]/70 shadow-[0_20px_80px_rgba(0,0,0,0.35)] transition-all duration-300 hover:-translate-y-1 hover:border-[#ffa51f]/45">
+                <Card className="group relative h-full overflow-hidden rounded-2xl glass soft-shadow border border-[var(--color-primary)]/10 bg-white/60 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-[var(--color-primary)]/45">
                   <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ffa51f]/70 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                   <div className="pointer-events-none absolute -right-16 -top-16 size-36 rounded-full bg-[#ffa51f]/10 blur-3xl transition-opacity duration-300 group-hover:opacity-100" />
                   <CardContent className="relative flex h-full flex-col p-6">

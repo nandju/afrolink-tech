@@ -24,7 +24,6 @@ import {
   Edit2,
   Trash2,
   Download,
-  LogOut,
   FileSpreadsheet,
   ArrowUp,
   ArrowDown,
@@ -37,7 +36,8 @@ import {
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
-import { clearAuthSession } from "@/lib/auth";
+import { ClientSidebar } from "@/components/ui/client-sidebar";
+import { FooterSection } from "@/components/sections/footer-section";
 
 // Font configuration
 type FontWeight = "Regular" | "SemiBold" | "Bold";
@@ -97,11 +97,11 @@ type WizardStep = 1 | 2 | 3 | 4 | 5;
 type ParticipantMode = "manual" | "excel";
 
 const wizardSteps: { id: WizardStep; label: string; shortLabel: string }[] = [
-  { id: 1, label: "PDF Upload", shortLabel: "PDF" },
-  { id: 2, label: "Field Configuration", shortLabel: "Fields" },
-  { id: 3, label: "Participant Import", shortLabel: "Participants" },
-  { id: 4, label: "Email Configuration", shortLabel: "Emails" },
-  { id: 5, label: "Final Generation", shortLabel: "Generation" },
+  { id: 1, label: "Téléversement PDF", shortLabel: "PDF" },
+  { id: 2, label: "Configuration des champs", shortLabel: "Champs" },
+  { id: 3, label: "Import des participants", shortLabel: "Participants" },
+  { id: 4, label: "Configuration Email", shortLabel: "Emails" },
+  { id: 5, label: "Génération finale", shortLabel: "Génération" },
 ];
 
 const isEmailColumn = (columnName: string) => {
@@ -130,9 +130,9 @@ export default function DashboardPage() {
   const [importedColumns, setImportedColumns] = useState<string[]>([]);
   const [detectedEmailColumn, setDetectedEmailColumn] = useState<string | null>(null);
   const [emailEnabled, setEmailEnabled] = useState(false);
-  const [emailSubject, setEmailSubject] = useState("Votre certificat AfroCertify");
+  const [emailSubject, setEmailSubject] = useState("Votre certificat PROUV");
   const [emailMessage, setEmailMessage] = useState(
-    "Bonjour {{first name}} {{last name}},\n\nVeuillez trouver votre certificat en pièce jointe.\n\nMerci."
+    "Bonjour {{nom}} {{prénom}},\n\nVeuillez trouver votre certificat en pièce jointe.\n\nCordialement,\nL'équipe PROUV"
   );
   const fontBytesCacheRef = useRef<Map<string, Uint8Array>>(new Map());
   const previewUrlRef = useRef<string | null>(null);
@@ -634,11 +634,6 @@ export default function DashboardPage() {
     };
   }, []);
 
-  const handleLogout = () => {
-    clearAuthSession();
-    document.cookie = "authenticated=; path=/; max-age=0";
-    router.push("/login");
-  };
 
   const canValidateStep = (step: WizardStep) => {
     if (step === 1) return Boolean(pdfFile);
@@ -665,9 +660,9 @@ export default function DashboardPage() {
     const sample = names[0];
     const values = sample?.fieldValues || {};
     return emailMessage
-      .replaceAll("{{first name}}", values["First Name"] || values["Prénom"] || values["Prenom"] || "")
-      .replaceAll("{{last name}}", values["Last Name"] || values["Nom"] || "")
-      .replaceAll("{{job title}}", values["Job Title"] || values["Fonction"] || values["Poste"] || "")
+      .replaceAll("{{prénom}}", values["Prénom"] || values["Prenom"] || values["First Name"] || "")
+      .replaceAll("{{nom}}", values["Nom"] || values["Last Name"] || "")
+      .replaceAll("{{poste}}", values["Poste"] || values["Fonction"] || values["Job Title"] || "")
       .replaceAll("{{email}}", sample?.email || "");
   };
 
@@ -679,25 +674,21 @@ export default function DashboardPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#000000] px-4 py-6 text-[#ffffff] sm:px-6">
+    <div className="flex min-h-screen bg-[#000000]">
+      <ClientSidebar />
+      
+      <main className="ml-64 flex-1 px-4 py-6 text-[#ffffff] sm:px-6">
       <div className="mx-auto max-w-7xl">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="font-display text-4xl font-bold text-[#ffffff] mb-2">
-              AfroCertify Studio
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <img src="/logo/icone_orange.png" alt="PROUV" className="h-10 w-10 rounded-xl bg-white p-1 shadow-md" />
+            <h1 className="font-heading text-4xl font-bold text-[#ffffff]">
+              PROUV Studio
             </h1>
-            <p className="text-[#ffffff]/70">
-              Un assistant simple pour configurer, importer et générer vos certificats.
-            </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={handleLogout}
-            className="border-[#ffa51f] text-[#ffffff] hover:bg-[#000000]/70"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Déconnexion
-          </Button>
+          <p className="text-[#ffffff]/70">
+            Configurez, importez et générez vos certificats en quelques clics.
+          </p>
         </div>
         <Card className="mb-6 border-[#ffffff]/10 bg-[#080808]/80 p-4">
           <div className="mb-4 flex items-center justify-between text-sm text-[#ffffff]/60">
@@ -926,7 +917,7 @@ export default function DashboardPage() {
             <CardHeader><CardTitle className="text-[#ffffff]">4. Emails optionnels</CardTitle><CardDescription className="text-[#ffffff]/60">Laissez désactivé pour conserver la génération ZIP classique.</CardDescription></CardHeader>
             <CardContent className="space-y-5">
               <button type="button" onClick={() => setEmailEnabled(!emailEnabled)} className={`flex w-full items-center justify-between rounded-3xl border p-5 ${emailEnabled ? "border-[#ffa51f] bg-[#ffa51f]/10" : "border-[#ffffff]/10 bg-[#ffffff]/5"}`}>
-                <span className="flex items-center gap-3"><Mail className="size-5 text-[#ffa51f]" />Enable automatic sending of certificates by email</span>
+                <span className="flex items-center gap-3"><Mail className="size-5 text-[#ffa51f]" />Activer l'envoi automatique des certificats par email</span>
                 <span className={`h-6 w-11 rounded-full p-1 ${emailEnabled ? "bg-[#ffa51f]" : "bg-[#ffffff]/20"}`}><span className={`block size-4 rounded-full bg-black transition-transform ${emailEnabled ? "translate-x-5" : ""}`} /></span>
               </button>
               {emailEnabled && (
@@ -934,10 +925,10 @@ export default function DashboardPage() {
                   <div className="space-y-4">
                     <Input value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} className="bg-[#000000]/70 border-[#ffffff]/10 text-[#ffffff]" />
                     <textarea value={emailMessage} onChange={(e) => setEmailMessage(e.target.value)} rows={9} className="w-full rounded-md border border-[#ffffff]/10 bg-[#000000]/70 p-3 text-sm text-[#ffffff]" />
-                    <p className="text-xs text-[#ffffff]/50">Variables: {"{{last name}}"} {"{{first name}}"} {"{{email}}"} {"{{job title}}"}</p>
+                    <p className="text-xs text-[#ffffff]/50">Variables: {"{{nom}}"} {"{{prénom}}"} {"{{email}}"} {"{{poste}}"}</p>
                   </div>
                   <div className="rounded-3xl border border-[#ffffff]/10 bg-[#ffffff]/5 p-5">
-                    <p className="mb-2 text-sm text-[#ffffff]/50">Message Preview</p>
+                    <p className="mb-2 text-sm text-[#ffffff]/50">Aperçu du message</p>
                     <h3 className="font-semibold text-[#ffffff]">{emailSubject}</h3>
                     <pre className="mt-4 whitespace-pre-wrap text-sm text-[#ffffff]/70">{renderEmailPreview()}</pre>
                   </div>
@@ -959,13 +950,15 @@ export default function DashboardPage() {
                 <div className="rounded-3xl border border-[#ffffff]/10 bg-[#ffffff]/5 p-5"><p className="text-sm text-[#ffffff]/50">Emails</p><p className="mt-2 font-semibold">{emailEnabled ? "Activé" : "Désactivé"}</p></div>
               </div>
               <Button onClick={generateAndMaybeSendCertificates} disabled={!pdfFile || names.length === 0 || textFields.length === 0 || isGenerating} className="h-14 w-full bg-[#ffa51f] text-base font-semibold text-[#000000] hover:bg-[#ffa51f]/90">
-                {isGenerating ? <><span className="mr-2 animate-spin">⏳</span>Génération en cours...</> : <><Download className="mr-2 size-5" />{emailEnabled ? "Generate and send certificates" : "Generate certificates"}</>}
+                {isGenerating ? <><span className="mr-2 animate-spin">⏳</span>Génération en cours...</> : <><Download className="mr-2 size-5" />{emailEnabled ? "Générer et envoyer les certificats" : "Générer les certificats"}</>}
               </Button>
             </CardContent>
           </Card>
         )}
       </div>
-    </main>
+      </main>
+      <FooterSection />
+    </div>
   );
 }
 

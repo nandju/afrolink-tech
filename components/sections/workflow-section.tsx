@@ -5,27 +5,27 @@ import { CheckCircle2, FileText, Mail, Send, Table2 } from "lucide-react"
 
 const workflowSteps = [
   {
-    label: "Start",
+    label: "Step 1",
     title: "Import PDF",
-    description: "Ajoutez votre modèle de certificat.",
+    description: "Upload your blank certificate template.",
     icon: FileText,
   },
   {
-    label: "Data",
-    title: "Ajouter les données",
-    description: "Importez participants, champs et emails.",
+    label: "Step 2",
+    title: "Import Participants",
+    description: "Add participants manually or import from Excel/CSV.",
     icon: Table2,
   },
   {
-    label: "Action",
-    title: "Générer",
-    description: "Créez tous les certificats PDF.",
+    label: "Step 3",
+    title: "Configure Template",
+    description: "Drag and drop fields, adjust fonts, and preview in real time.",
     icon: CheckCircle2,
   },
   {
-    label: "Send",
-    title: "Envoyer",
-    description: "Transférez chaque certificat avec un message personnalisé.",
+    label: "Step 4",
+    title: "Generate & Send",
+    description: "Generate certificates and instantly send them by email.",
     icon: Mail,
   },
 ]
@@ -49,7 +49,7 @@ export function WorkflowSection() {
           <div className="relative z-10 max-w-2xl">
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#ffa51f]/20 bg-[#ffa51f]/10 px-3 py-1.5">
               <span className="size-2 rounded-full bg-[#ffa51f] shadow-[0_0_18px_rgba(255,165,31,0.8)]" />
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#ffffff]/80">Workflow</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#ffffff]/80">Comment ça marche</p>
             </div>
 
             <h2 className="font-display text-4xl font-bold tracking-[-0.055em] text-[#ffffff] md:text-5xl lg:text-6xl">

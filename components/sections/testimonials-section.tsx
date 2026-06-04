@@ -5,55 +5,55 @@ import { TestimonialsColumn } from "@/components/ui/testimonials-column"
 
 const testimonials = [
   {
-    text: "Cette plateforme a complètement transformé notre façon de générer des certificats. Nous avons créé 500 certificats en 10 minutes au lieu de plusieurs heures.",
+    text: "This platform completely transformed how we generate certificates. We created 500 certificates in 10 minutes instead of several hours.",
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
     name: "Sarah Traoré",
     role: "Directrice de Formation",
   },
   {
-    text: "Le meilleur investissement que nous ayons fait. L'outil est simple, rapide et efficace. Parfait pour nos formations.",
+    text: "The best investment we've made. The tool is simple, fast, and efficient. Perfect for our training sessions.",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
     name: "Marc Kouassi",
     role: "Responsable ONG",
   },
   {
-    text: "Enfin un outil qui tient ses promesses. La génération de certificats est devenue un jeu d'enfant.",
+    text: "Finally, a tool that delivers on its promises. Certificate generation is now effortless.",
     image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
     name: "Émilie Diallo",
     role: "Coordinatrice École",
   },
   {
-    text: "L'implémentation a été fluide et rapide. L'interface intuitive a rendu l'onboarding de l'équipe sans effort.",
+    text: "Implementation was smooth and fast. The intuitive interface made onboarding effortless for our team.",
     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
     name: "David Koffi",
     role: "Gestionnaire IT",
   },
   {
-    text: "L'équipe de support est exceptionnelle, nous guidant à travers la configuration et fournissant une assistance continue.",
+    text: "The support team is exceptional, guiding us through setup and providing ongoing assistance.",
     image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
     name: "Aïcha Diop",
     role: "Responsable Succès Client",
   },
   {
-    text: "L'intégration transparente a amélioré nos opérations et notre efficacité. Je recommande vivement.",
+    text: "The seamless integration improved our operations and efficiency. Highly recommended.",
     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
     name: "James N'Guessan",
     role: "Directeur Séminaires",
   },
   {
-    text: "Ses fonctionnalités robustes et son support rapide ont transformé notre flux de travail de manière significative.",
+    text: "Its robust features and fast support have significantly transformed our workflow.",
     image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face",
     name: "Lisa Koné",
     role: "Chef de Projet",
   },
   {
-    text: "L'implémentation fluide a dépassé nos attentes. Cela a rationalisé tout notre processus métier.",
+    text: "The smooth implementation exceeded our expectations. It streamlined our entire business process.",
     image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face",
     name: "Michel Bamba",
     role: "Analyste Business",
   },
   {
-    text: "La productivité de notre équipe s'est améliorée de manière spectaculaire grâce au design convivial et aux fonctionnalités puissantes.",
+    text: "Our team's productivity improved dramatically thanks to the user-friendly design and powerful features.",
     image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
     name: "Rachel Soro",
     role: "Directrice Marketing",
@@ -77,13 +77,14 @@ export function TestimonialsSection() {
           viewport={{ once: true }}
           className="flex flex-col items-center justify-center max-w-xl mx-auto mb-12"
         >
-          <div className="border border-[#000000] py-1.5 px-4 rounded-full text-sm text-[#ffffff]/70">Témoignages</div>
-
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-[#ffffff] mt-6 text-center tracking-tight">
-            Ce que nos utilisateurs disent
+          <div className="border border-[var(--color-primary)] py-1.5 px-4 rounded-full text-sm text-[var(--color-primary)]/80 bg-white/70 glass">
+            Témoignages
+          </div>
+          <h2 className="font-heading text-4xl md:text-5xl font-bold text-[var(--color-text)] mt-6 text-center tracking-tight">
+            Ce que disent nos utilisateurs
           </h2>
-          <p className="text-center mt-4 text-[#ffffff]/70 text-lg text-balance">
-            Découvrez ce que nos clients pensent de notre plateforme.
+          <p className="text-center mt-4 text-[var(--color-text)]/70 text-lg text-balance">
+            Découvrez ce que nos clients pensent de PROUV.
           </p>
         </motion.div>
 
@@ -94,7 +95,7 @@ export function TestimonialsSection() {
         </div>
 
         <div className="mt-16 pt-16 border-t border-[#000000]/50">
-          <p className="text-center text-sm text-[#ffffff]/70 mb-8">Recommandé par des leaders du secteur</p>
+          <p className="text-center text-sm text-[#ffffff]/70 mb-8">Recommandé par les leaders du secteur</p>
           <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_20%,black_80%,transparent)]">
             <motion.div
               className="flex gap-12 md:gap-16"
