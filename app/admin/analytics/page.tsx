@@ -2,8 +2,50 @@
 
 import { AdminSidebar } from "@/components/ui/admin-sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { PlaceholderImage } from "@/components/ui/placeholder-image"
 import { TrendingUp, Users, FileText, Mail, DollarSign, Activity } from "lucide-react"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
+import { LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, CartesianGrid, XAxis } from "recharts"
+
+const usersMonthlyData = [
+  { month: "Août", users: 410 },
+  { month: "Sept", users: 520 },
+  { month: "Oct", users: 640 },
+  { month: "Nov", users: 705 },
+  { month: "Déc", users: 810 },
+  { month: "Janv", users: 892 },
+]
+
+const certificatesMonthlyData = [
+  { month: "Août", certificates: 320 },
+  { month: "Sept", certificates: 410 },
+  { month: "Oct", certificates: 480 },
+  { month: "Nov", certificates: 560 },
+  { month: "Déc", certificates: 690 },
+  { month: "Janv", certificates: 830 },
+]
+
+const revenueMonthlyData = [
+  { month: "Août", revenue: 1200000 },
+  { month: "Sept", revenue: 1450000 },
+  { month: "Oct", revenue: 1680000 },
+  { month: "Nov", revenue: 1950000 },
+  { month: "Déc", revenue: 2150000 },
+  { month: "Janv", revenue: 2400000 },
+]
+
+const conversionData = [
+  { name: "Convertis", value: 68 },
+  { name: "Non convertis", value: 32 },
+]
+
+const usersChartConfig = { users: { label: "Utilisateurs", color: "#D68C2D" } } satisfies ChartConfig
+const certificatesChartConfig = { certificates: { label: "Certificats", color: "#12A2AC" } } satisfies ChartConfig
+const revenueChartConfig = { revenue: { label: "Revenus (FCFA)", color: "#10B981" } } satisfies ChartConfig
+const conversionChartConfig = {
+  Convertis: { label: "Convertis", color: "#D68C2D" },
+  "Non convertis": { label: "Non convertis", color: "#E5E7EB" },
+} satisfies ChartConfig
+const CONVERSION_COLORS = ["#D68C2D", "#E5E7EB"]
 
 export default function AdminAnalyticsPage() {
   return (
@@ -90,7 +132,14 @@ export default function AdminAnalyticsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <PlaceholderImage aspectRatio="video" text="Chart: Utilisateurs mensuels" className="h-64" />
+                <ChartContainer config={usersChartConfig} className="h-64 w-full">
+                  <LineChart data={usersMonthlyData} margin={{ left: 0, right: 12 }}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Line dataKey="users" type="monotone" stroke="var(--color-users)" strokeWidth={2} dot={{ r: 3 }} />
+                  </LineChart>
+                </ChartContainer>
               </CardContent>
             </Card>
 
@@ -101,7 +150,14 @@ export default function AdminAnalyticsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <PlaceholderImage aspectRatio="video" text="Chart: Certificats par mois" className="h-64" />
+                <ChartContainer config={certificatesChartConfig} className="h-64 w-full">
+                  <BarChart data={certificatesMonthlyData} margin={{ left: 0, right: 12 }}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="certificates" fill="var(--color-certificates)" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ChartContainer>
               </CardContent>
             </Card>
           </div>
@@ -115,7 +171,14 @@ export default function AdminAnalyticsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <PlaceholderImage aspectRatio="video" text="Chart: Revenus" className="h-64" />
+                <ChartContainer config={revenueChartConfig} className="h-64 w-full">
+                  <AreaChart data={revenueMonthlyData} margin={{ left: 0, right: 12 }}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area dataKey="revenue" type="monotone" fill="var(--color-revenue)" fillOpacity={0.2} stroke="var(--color-revenue)" strokeWidth={2} />
+                  </AreaChart>
+                </ChartContainer>
               </CardContent>
             </Card>
 
@@ -126,7 +189,16 @@ export default function AdminAnalyticsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <PlaceholderImage aspectRatio="video" text="Chart: Conversion" className="h-64" />
+                <ChartContainer config={conversionChartConfig} className="mx-auto h-64 aspect-square">
+                  <PieChart>
+                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                    <Pie data={conversionData} dataKey="value" nameKey="name" innerRadius={55} outerRadius={85} strokeWidth={4}>
+                      {conversionData.map((entry, index) => (
+                        <Cell key={entry.name} fill={CONVERSION_COLORS[index % CONVERSION_COLORS.length]} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ChartContainer>
               </CardContent>
             </Card>
           </div>

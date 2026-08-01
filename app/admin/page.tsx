@@ -3,7 +3,34 @@
 import { AdminSidebar } from "@/components/ui/admin-sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, FileText, Mail, CreditCard, TrendingUp, Activity } from "lucide-react"
-import { PlaceholderImage } from "@/components/ui/placeholder-image"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
+import { AreaChart, Area, BarChart, Bar, CartesianGrid, XAxis } from "recharts"
+
+const certificatesMonthlyData = [
+  { month: "Août", certificates: 320 },
+  { month: "Sept", certificates: 410 },
+  { month: "Oct", certificates: 480 },
+  { month: "Nov", certificates: 560 },
+  { month: "Déc", certificates: 690 },
+  { month: "Janv", certificates: 830 },
+]
+
+const revenueMonthlyData = [
+  { month: "Août", revenue: 1200000 },
+  { month: "Sept", revenue: 1450000 },
+  { month: "Oct", revenue: 1680000 },
+  { month: "Nov", revenue: 1950000 },
+  { month: "Déc", revenue: 2150000 },
+  { month: "Janv", revenue: 2400000 },
+]
+
+const certificatesChartConfig = {
+  certificates: { label: "Certificats", color: "#D68C2D" },
+} satisfies ChartConfig
+
+const revenueChartConfig = {
+  revenue: { label: "Revenus (FCFA)", color: "#12A2AC" },
+} satisfies ChartConfig
 
 const stats = [
   { label: "Utilisateurs", value: "1,234", change: "+12%", icon: Users, color: "text-[#D68C2D]", bgColor: "bg-[#D68C2D]/10" },
@@ -67,7 +94,14 @@ export default function AdminDashboard() {
                 <CardTitle className="text-lg font-semibold text-[#1E1E1E]">Certificats générés</CardTitle>
               </CardHeader>
               <CardContent>
-                <PlaceholderImage aspectRatio="video" text="Chart: Certificats par mois" className="h-64" />
+                <ChartContainer config={certificatesChartConfig} className="h-64 w-full">
+                  <AreaChart data={certificatesMonthlyData} margin={{ left: 0, right: 12 }}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area dataKey="certificates" type="monotone" fill="var(--color-certificates)" fillOpacity={0.2} stroke="var(--color-certificates)" strokeWidth={2} />
+                  </AreaChart>
+                </ChartContainer>
               </CardContent>
             </Card>
 
@@ -76,7 +110,14 @@ export default function AdminDashboard() {
                 <CardTitle className="text-lg font-semibold text-[#1E1E1E]">Revenus</CardTitle>
               </CardHeader>
               <CardContent>
-                <PlaceholderImage aspectRatio="video" text="Chart: Revenus mensuels" className="h-64" />
+                <ChartContainer config={revenueChartConfig} className="h-64 w-full">
+                  <BarChart data={revenueMonthlyData} margin={{ left: 0, right: 12 }}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="revenue" fill="var(--color-revenue)" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ChartContainer>
               </CardContent>
             </Card>
           </div>

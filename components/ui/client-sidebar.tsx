@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils"
 
 const menuItems = [
   { href: "/client/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard", label: "Créer un certificat", icon: Plus },
+  { href: "/dashboard", label: "Créer une campagne", icon: Plus },
   { href: "/client/history", label: "Historique", icon: History },
   { href: "/client/credits", label: "Crédits", icon: CreditCard },
   { href: "/client/invoices", label: "Factures", icon: Receipt },
