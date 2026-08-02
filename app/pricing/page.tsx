@@ -13,13 +13,14 @@ const plans = [
     period: "",
     features: [
       "20 certificats inclus",
-      "Téléversement PDF",
+      "Éditeur visuel drag-and-drop",
+      "Import PDF ou image",
       "Import Excel/CSV",
       "Saisie manuelle",
-      "Personnalisation de base",
+      "Personnalisation polices & couleurs",
       "Téléchargement ZIP",
     ],
-    cta: "Générer mon Certificat",
+    cta: "Commencer gratuitement",
     highlighted: true,
   },
   {
@@ -31,7 +32,8 @@ const plans = [
       "100 certificats inclus",
       "Toutes les fonctionnalités du Pack Gratuit",
       "Personnalisation avancée",
-      "Envoi d'emails",
+      "Envoi d'emails automatique",
+      "QR code de vérification publique",
       "Historique & analytiques",
     ],
     cta: "Obtenir le Pack Formateur",
@@ -45,8 +47,10 @@ const plans = [
     features: [
       "500 certificats inclus",
       "Toutes les fonctionnalités du Pack Formateur",
+      "Espace bénéficiaire (Wallet)",
       "Support prioritaire",
       "Actions en masse",
+      "Statistiques avancées",
     ],
     cta: "Obtenir le Pack Institution",
     highlighted: false,
@@ -59,7 +63,8 @@ const plans = [
     features: [
       "2 000 certificats inclus",
       "Toutes les fonctionnalités du Pack Institution",
-      "Support événementiel",
+      "Accès API REST & Webhooks",
+      "Support événementiel dédié",
       "Assistance dédiée",
     ],
     cta: "Obtenir le Pack Grand Événement",
@@ -99,6 +104,14 @@ const faqs = [
   {
     question: "Y a-t-il des frais cachés ?",
     answer: "Non, nos tarifs sont transparents. Vous payez uniquement pour les crédits que vous achetez."
+  },
+  {
+    question: "La vérification publique est-elle incluse ?",
+    answer: "Oui, chaque certificat généré dispose d'un QR code et d'une page de vérification publique, disponibles dans tous les forfaits."
+  },
+  {
+    question: "L'API est-elle disponible dans tous les forfaits ?",
+    answer: "L'accès API REST et Webhooks est disponible à partir du Pack Grand Événement. Contactez-nous pour des besoins personnalisés."
   }
 ]
 

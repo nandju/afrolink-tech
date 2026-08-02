@@ -4,28 +4,28 @@ import { Star } from "lucide-react"
 
 const testimonials = [
   {
-    name: "Marie Dubois",
+    name: "Aminata Traoré",
     role: "Responsable Formation",
-    company: "TechCorp",
+    company: "PROUV Academy",
     content: "PROUV nous a fait gagner un temps considérable. Ce qui prenait des heures se fait maintenant en quelques minutes.",
     rating: 5,
-    avatar: "MD"
+    avatar: "AT"
   },
   {
-    name: "Jean Martin",
-    role: "Directeur RH",
-    company: "InnovateCo",
-    content: "Interface intuitive et résultats professionnels. Exactement ce que nous cherchions pour nos formations.",
+    name: "Ibrahim Koné",
+    role: "Directeur Pédagogique",
+    company: "EduPlus Abidjan",
+    content: "Interface intuitive et résultats professionnels. L'import Excel et l'envoi automatique par email sont des fonctionnalités indispensables.",
     rating: 5,
-    avatar: "JM"
+    avatar: "IK"
   },
   {
-    name: "Sophie Laurent",
+    name: "Fatou Diarra",
     role: "Chef de Projet",
-    company: "EduPlus",
-    content: "L'import Excel et l'envoi automatique par email sont des fonctionnalités indispensables. Très satisfaits !",
+    company: "InnovateCo",
+    content: "La vérification publique par QR code a complètement éliminé les contrefaçons de nos certificats. Nos employés adorent le wallet.",
     rating: 5,
-    avatar: "SL"
+    avatar: "FD"
   }
 ]
 

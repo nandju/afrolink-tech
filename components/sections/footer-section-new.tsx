@@ -6,15 +6,15 @@ import { Mail, Phone, MapPin } from "lucide-react"
 const footerLinks = {
   product: [
     { label: "Fonctionnalités", href: "/#features" },
+    { label: "Cas d'usage", href: "/#use-cases" },
     { label: "Tarifs", href: "/pricing" },
-    { label: "Comment ça marche", href: "/#workflow" },
-    { label: "Témoignages", href: "/#testimonials" }
+    { label: "FAQ", href: "/#faq" }
   ],
   company: [
-    { label: "À propos", href: "/about" },
     { label: "Contact", href: "/contact" },
-    { label: "Aide", href: "/help" },
-    { label: "Blog", href: "/blog" }
+    { label: "Centre d'aide", href: "/help" },
+    { label: "Connexion", href: "/login" },
+    { label: "Créer un compte", href: "/register" }
   ],
   legal: [
     { label: "Conditions d'utilisation", href: "/terms" },

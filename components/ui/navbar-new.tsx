@@ -6,11 +6,11 @@ import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const navLinks = [
-  { href: "/#features", label: "Fonctionnalités" },
-  { href: "/#workflow", label: "Comment ça marche" },
+  { href: "/#features", label: "Produit" },
+  { href: "/#use-cases", label: "Solutions" },
   { href: "/pricing", label: "Tarifs" },
-  { href: "/help", label: "Aide" },
-  // { href: "/admin", label: "Espace Admin" },
+  { href: "/#faq", label: "Ressources" },
+  { href: "/contact", label: "Contact" },
 ]
 
 export function NavbarNew() {
@@ -27,7 +27,7 @@ export function NavbarNew() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden items-center gap-8 md:flex">
+          <div className="hidden items-center gap-8 lg:flex">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -40,7 +40,7 @@ export function NavbarNew() {
           </div>
 
           {/* Desktop CTAs */}
-          <div className="hidden items-center gap-4 md:flex">
+          <div className="hidden items-center gap-4 lg:flex">
             <Link href="/login">
               <Button
                 variant="ghost"
@@ -49,9 +49,9 @@ export function NavbarNew() {
                 Connexion
               </Button>
             </Link>
-            <Link href="/dashboard">
+            <Link href="/register">
               <Button className="rounded-xl bg-[#D68C2D] text-sm font-semibold text-white shadow-sm hover:bg-[#D68C2D]/90">
-                Générer mon Certificat
+                Essayer gratuitement
               </Button>
             </Link>
           </div>
@@ -59,7 +59,7 @@ export function NavbarNew() {
           {/* Mobile menu button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="rounded-lg p-2 text-[#6B7280] hover:bg-[#FAFAFA] md:hidden"
+            className="rounded-lg p-2 text-[#6B7280] hover:bg-[#FAFAFA] lg:hidden"
           >
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
@@ -67,7 +67,7 @@ export function NavbarNew() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="border-t border-[#E5E7EB] py-4 md:hidden">
+          <div className="border-t border-[#E5E7EB] py-4 lg:hidden">
             <div className="space-y-4">
               {navLinks.map((link) => (
                 <Link
@@ -89,12 +89,12 @@ export function NavbarNew() {
                     Connexion
                   </Button>
                 </Link>
-                <Link href="/dashboard" className="block">
+                <Link href="/register" className="block">
                   <Button
                     className="w-full rounded-xl bg-[#D68C2D] text-white hover:bg-[#D68C2D]/90"
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Générer mon Certificat
+                    Essayer gratuitement
                   </Button>
                 </Link>
               </div>
