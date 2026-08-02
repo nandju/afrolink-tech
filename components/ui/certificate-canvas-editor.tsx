@@ -1,6 +1,9 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
+import { Stage, Layer, Rect, Text, Image as KonvaImage, Ellipse, Line as KonvaLine, Group, Transformer } from "react-konva";
+import type Konva from "konva";
+import useImage from "use-image";
 import {
   Type,
   ImageIcon,
@@ -18,7 +21,6 @@ import {
   ChevronDown,
   Layers as LayersIcon,
   Settings2,
-  RotateCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,24 +69,37 @@ interface CertificateCanvasEditorProps {
   className?: string;
 }
 
-const SNAP_THRESHOLD = 6;
-const CANVAS_HEIGHT = 700;
+export const SNAP_THRESHOLD = 6;
+export const CANVAS_WIDTH = 842;
+export const CANVAS_HEIGHT = 595;
 
 let idCounter = 0;
 const nextId = (prefix: string) => `${prefix}-${Date.now()}-${idCounter++}`;
 
-type DragMode = "move" | "resize" | "rotate";
+// ---- Background image component ----
 
-interface DragState {
-  mode: DragMode;
-  id: string;
-  handle?: string;
-  startClientX: number;
-  startClientY: number;
-  origin: CanvasObject;
-  centerX: number;
-  centerY: number;
+function BackgroundImage({ url }: { url: string }) {
+  const [img] = useImage(url, "anonymous");
+  if (!img) return null;
+  // Compute object-cover crop
+  const imgRatio = img.width / img.height;
+  const canvasRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
+  let drawW: number, drawH: number, drawX: number, drawY: number;
+  if (imgRatio > canvasRatio) {
+    drawH = CANVAS_HEIGHT;
+    drawW = CANVAS_HEIGHT * imgRatio;
+    drawX = (CANVAS_WIDTH - drawW) / 2;
+    drawY = 0;
+  } else {
+    drawW = CANVAS_WIDTH;
+    drawH = CANVAS_WIDTH / imgRatio;
+    drawX = 0;
+    drawY = (CANVAS_HEIGHT - drawH) / 2;
+  }
+  return <KonvaImage image={img} x={drawX} y={drawY} width={drawW} height={drawH} listening={false} />;
 }
+
+// ---- Main component ----
 
 export function CertificateCanvasEditor({
   pdfUrl,
@@ -96,100 +111,102 @@ export function CertificateCanvasEditor({
   className = "",
 }: CertificateCanvasEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<Konva.Stage>(null);
+  const transformerRef = useRef<Konva.Transformer>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const replaceImageInputRef = useRef<HTMLInputElement>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"properties" | "layers">("properties");
   const [guides, setGuides] = useState<{ v: number | null; h: number | null }>({ v: null, h: null });
-  const dragStateRef = useRef<DragState | null>(null);
+  const [stageScale, setStageScale] = useState(1);
+  const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
+
+  // Compute scale to fit canvas in container
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const updateScale = () => {
+      const availW = container.clientWidth - 64; // padding
+      const availH = container.clientHeight - 64;
+      const scaleX = availW / CANVAS_WIDTH;
+      const scaleY = availH / CANVAS_HEIGHT;
+      const scale = Math.min(scaleX, scaleY, 1);
+      setStageScale(scale);
+      // Center the stage
+      setStagePos({
+        x: (container.clientWidth - CANVAS_WIDTH * scale) / 2,
+        y: (container.clientHeight - CANVAS_HEIGHT * scale) / 2,
+      });
+    };
+    updateScale();
+    const ro = new ResizeObserver(updateScale);
+    ro.observe(container);
+    return () => ro.disconnect();
+  }, []);
 
   const selected = objects.find((o) => o.id === selectedId) || null;
 
-  const updateObject = (id: string, updates: Partial<CanvasObject>) => {
+  const updateObject = useCallback((id: string, updates: Partial<CanvasObject>) => {
     onObjectsChange(objects.map((o) => (o.id === id ? { ...o, ...updates } : o)));
-  };
+  }, [objects, onObjectsChange]);
 
-  const removeObject = (id: string) => {
+  const removeObject = useCallback((id: string) => {
     onObjectsChange(objects.filter((o) => o.id !== id));
     if (selectedId === id) setSelectedId(null);
-  };
+  }, [objects, onObjectsChange, selectedId]);
 
-  const duplicateObject = (id: string) => {
+  const duplicateObject = useCallback((id: string) => {
     const obj = objects.find((o) => o.id === id);
     if (!obj) return;
     const maxZ = Math.max(0, ...objects.map((o) => o.zIndex));
     const clone: CanvasObject = { ...obj, id: nextId(obj.type), x: obj.x + 20, y: obj.y + 20, zIndex: maxZ + 1, name: `${obj.name} (copie)` };
     onObjectsChange([...objects, clone]);
     setSelectedId(clone.id);
-  };
+  }, [objects, onObjectsChange]);
 
-  const bringForward = (id: string) => {
+  const bringForward = useCallback((id: string) => {
     const sorted = [...objects].sort((a, b) => a.zIndex - b.zIndex);
     const idx = sorted.findIndex((o) => o.id === id);
     if (idx < sorted.length - 1) {
       const a = sorted[idx];
       const b = sorted[idx + 1];
-      updateObject(a.id, { zIndex: b.zIndex });
-      updateObject(b.id, { zIndex: a.zIndex });
+      onObjectsChange(objects.map((o) => o.id === a.id ? { ...o, zIndex: b.zIndex } : o.id === b.id ? { ...o, zIndex: a.zIndex } : o));
     }
-  };
+  }, [objects, onObjectsChange]);
 
-  const sendBackward = (id: string) => {
+  const sendBackward = useCallback((id: string) => {
     const sorted = [...objects].sort((a, b) => a.zIndex - b.zIndex);
     const idx = sorted.findIndex((o) => o.id === id);
     if (idx > 0) {
       const a = sorted[idx];
       const b = sorted[idx - 1];
-      updateObject(a.id, { zIndex: b.zIndex });
-      updateObject(b.id, { zIndex: a.zIndex });
+      onObjectsChange(objects.map((o) => o.id === a.id ? { ...o, zIndex: b.zIndex } : o.id === b.id ? { ...o, zIndex: a.zIndex } : o));
     }
-  };
+  }, [objects, onObjectsChange]);
 
-  const addObject = (type: CanvasObjectType) => {
+  const addObject = useCallback((type: CanvasObjectType) => {
     const maxZ = Math.max(0, ...objects.map((o) => o.zIndex));
-    const centerX = (containerRef.current?.getBoundingClientRect().width || 500) / 2;
-    const base = {
-      id: nextId(type),
-      zIndex: maxZ + 1,
-      opacity: 1,
-      rotation: 0,
-      visible: true,
-      locked: false,
-    };
+    const centerX = CANVAS_WIDTH / 2;
+    const base = { id: nextId(type), zIndex: maxZ + 1, opacity: 1, rotation: 0, visible: true, locked: false };
     let obj: CanvasObject;
     switch (type) {
       case "text":
-        obj = {
-          ...base,
-          type: "text",
-          name: "Nouveau texte",
-          x: Math.max(0, centerX - 80),
-          y: 300,
-          width: 200,
-          height: 42,
-          dataKey: availableDataKeys[0] || "",
-          fallbackText: "Texte exemple",
-          fontSize: 28,
-          color: "#1E1E1E",
-          fontFamily: "Montserrat",
-          fontWeight: "Bold",
-          textAlign: "left",
-        };
+        obj = { ...base, type: "text", name: "Nouveau texte", x: Math.max(0, centerX - 80), y: 250, width: 200, height: 42, dataKey: availableDataKeys[0] || "", fallbackText: "Texte exemple", fontSize: 28, color: "#1E1E1E", fontFamily: "Montserrat", fontWeight: "Bold", textAlign: "left" };
         break;
       case "image":
-        obj = { ...base, type: "image", name: "Image", x: centerX - 60, y: 300, width: 120, height: 120, src: undefined };
+        obj = { ...base, type: "image", name: "Image", x: centerX - 60, y: 250, width: 120, height: 120, src: undefined };
         break;
       case "rect":
-        obj = { ...base, type: "rect", name: "Rectangle", x: centerX - 75, y: 300, width: 150, height: 80, fill: "#D68C2D33", stroke: "#D68C2D", strokeWidth: 2 };
+        obj = { ...base, type: "rect", name: "Rectangle", x: centerX - 75, y: 250, width: 150, height: 80, fill: "#D68C2D33", stroke: "#D68C2D", strokeWidth: 2 };
         break;
       case "ellipse":
-        obj = { ...base, type: "ellipse", name: "Ellipse", x: centerX - 60, y: 300, width: 120, height: 120, fill: "#12A2AC33", stroke: "#12A2AC", strokeWidth: 2 };
+        obj = { ...base, type: "ellipse", name: "Ellipse", x: centerX - 60, y: 250, width: 120, height: 120, fill: "#12A2AC33", stroke: "#12A2AC", strokeWidth: 2 };
         break;
       case "line":
-        obj = { ...base, type: "line", name: "Ligne", x: centerX - 75, y: 300, width: 150, height: 2, stroke: "#1E1E1E", strokeWidth: 2, fill: "transparent" };
+        obj = { ...base, type: "line", name: "Ligne", x: centerX - 75, y: 250, width: 150, height: 2, stroke: "#1E1E1E", strokeWidth: 2, fill: "transparent" };
         break;
       case "qr":
-        obj = { ...base, type: "qr", name: "QR Code", x: centerX - 50, y: 300, width: 100, height: 100 };
+        obj = { ...base, type: "qr", name: "QR Code", x: centerX - 50, y: 250, width: 100, height: 100 };
         break;
       default:
         return;
@@ -197,7 +214,7 @@ export function CertificateCanvasEditor({
     onObjectsChange([...objects, obj]);
     setSelectedId(obj.id);
     setActiveTab("properties");
-  };
+  }, [objects, onObjectsChange, availableDataKeys]);
 
   const handleImageFile = (file: File, targetId?: string) => {
     const reader = new FileReader();
@@ -207,21 +224,7 @@ export function CertificateCanvasEditor({
         updateObject(targetId, { src });
       } else {
         const maxZ = Math.max(0, ...objects.map((o) => o.zIndex));
-        const obj: CanvasObject = {
-          id: nextId("image"),
-          type: "image",
-          name: "Image",
-          x: 150,
-          y: 300,
-          width: 140,
-          height: 140,
-          rotation: 0,
-          opacity: 1,
-          zIndex: maxZ + 1,
-          visible: true,
-          locked: false,
-          src,
-        };
+        const obj: CanvasObject = { id: nextId("image"), type: "image", name: "Image", x: 150, y: 250, width: 140, height: 140, rotation: 0, opacity: 1, zIndex: maxZ + 1, visible: true, locked: false, src };
         onObjectsChange([...objects, obj]);
         setSelectedId(obj.id);
       }
@@ -229,151 +232,81 @@ export function CertificateCanvasEditor({
     reader.readAsDataURL(file);
   };
 
-  // ---- Drag / resize / rotate handling ----
-  const startDrag = (e: React.MouseEvent, id: string, mode: DragMode, handle?: string) => {
-    const obj = objects.find((o) => o.id === id);
-    if (!obj || obj.locked) return;
-    e.preventDefault();
-    e.stopPropagation();
-    setSelectedId(id);
-    const centerX = obj.x + obj.width / 2;
-    const centerY = obj.y + obj.height / 2;
-    dragStateRef.current = {
-      mode,
-      id,
-      handle,
-      startClientX: e.clientX,
-      startClientY: e.clientY,
-      origin: obj,
-      centerX,
-      centerY,
-    };
-    window.addEventListener("mousemove", handleWindowMouseMove);
-    window.addEventListener("mouseup", handleWindowMouseUp);
-  };
-
+  // ---- Snapping logic ----
   const computeSnappedPosition = useCallback(
-    (candidate: { x: number; y: number; width: number; height: number }, id: string) => {
-      const containerWidth = containerRef.current?.getBoundingClientRect().width || 0;
-      const containerHeight = CANVAS_HEIGHT;
-      let { x, y } = candidate;
+    (node: Konva.Node, obj: CanvasObject): { x: number; y: number; vLine: number | null; hLine: number | null } => {
+      const x = node.x();
+      const y = node.y();
+      const w = obj.width;
+      const h = obj.height;
+      let snappedX = x;
+      let snappedY = y;
       let vLine: number | null = null;
       let hLine: number | null = null;
 
-      const candLeft = x;
-      const candRight = x + candidate.width;
-      const candCenterX = x + candidate.width / 2;
-      const candTop = y;
-      const candBottom = y + candidate.height;
-      const candCenterY = y + candidate.height / 2;
-
-      const vTargets: number[] = [0, containerWidth / 2, containerWidth];
-      const hTargets: number[] = [0, containerHeight / 2, containerHeight];
+      const vTargets: number[] = [0, CANVAS_WIDTH / 2, CANVAS_WIDTH];
+      const hTargets: number[] = [0, CANVAS_HEIGHT / 2, CANVAS_HEIGHT];
       objects
-        .filter((o) => o.id !== id && o.visible)
+        .filter((o) => o.id !== obj.id && o.visible)
         .forEach((o) => {
           vTargets.push(o.x, o.x + o.width / 2, o.x + o.width);
           hTargets.push(o.y, o.y + o.height / 2, o.y + o.height);
         });
 
+      const candLeft = x;
+      const candRight = x + w;
+      const candCenterX = x + w / 2;
       for (const t of vTargets) {
-        if (Math.abs(candCenterX - t) < SNAP_THRESHOLD) {
-          x = t - candidate.width / 2;
-          vLine = t;
-          break;
-        }
-        if (Math.abs(candLeft - t) < SNAP_THRESHOLD) {
-          x = t;
-          vLine = t;
-          break;
-        }
-        if (Math.abs(candRight - t) < SNAP_THRESHOLD) {
-          x = t - candidate.width;
-          vLine = t;
-          break;
-        }
-      }
-      for (const t of hTargets) {
-        if (Math.abs(candCenterY - t) < SNAP_THRESHOLD) {
-          y = t - candidate.height / 2;
-          hLine = t;
-          break;
-        }
-        if (Math.abs(candTop - t) < SNAP_THRESHOLD) {
-          y = t;
-          hLine = t;
-          break;
-        }
-        if (Math.abs(candBottom - t) < SNAP_THRESHOLD) {
-          y = t - candidate.height;
-          hLine = t;
-          break;
-        }
+        if (Math.abs(candCenterX - t) < SNAP_THRESHOLD) { snappedX = t - w / 2; vLine = t; break; }
+        if (Math.abs(candLeft - t) < SNAP_THRESHOLD) { snappedX = t; vLine = t; break; }
+        if (Math.abs(candRight - t) < SNAP_THRESHOLD) { snappedX = t - w; vLine = t; break; }
       }
 
-      return { x, y, vLine, hLine };
+      const candTop = y;
+      const candBottom = y + h;
+      const candCenterY = y + h / 2;
+      for (const t of hTargets) {
+        if (Math.abs(candCenterY - t) < SNAP_THRESHOLD) { snappedY = t - h / 2; hLine = t; break; }
+        if (Math.abs(candTop - t) < SNAP_THRESHOLD) { snappedY = t; hLine = t; break; }
+        if (Math.abs(candBottom - t) < SNAP_THRESHOLD) { snappedY = t - h; hLine = t; break; }
+      }
+
+      return { x: Math.round(snappedX), y: Math.round(snappedY), vLine, hLine };
     },
     [objects]
   );
 
-  const handleWindowMouseMove = useCallback(
-    (e: MouseEvent) => {
-      const drag = dragStateRef.current;
-      if (!drag) return;
-      const dx = e.clientX - drag.startClientX;
-      const dy = e.clientY - drag.startClientY;
-      const { origin } = drag;
+  const handleDragMove = useCallback((e: Konva.KonvaEventObject<DragEvent>, obj: CanvasObject) => {
+    const node = e.target;
+    const snapped = computeSnappedPosition(node, obj);
+    node.x(snapped.x);
+    node.y(snapped.y);
+    setGuides({ v: snapped.vLine, h: snapped.hLine });
+  }, [computeSnappedPosition]);
 
-      if (drag.mode === "move") {
-        const snapped = computeSnappedPosition(
-          { x: origin.x + dx, y: origin.y + dy, width: origin.width, height: origin.height },
-          drag.id
-        );
-        setGuides({ v: snapped.vLine, h: snapped.hLine });
-        updateObject(drag.id, { x: Math.round(snapped.x), y: Math.round(snapped.y) });
-      } else if (drag.mode === "resize") {
-        let { x, y, width, height } = origin;
-        const handle = drag.handle || "se";
-        if (handle.includes("e")) width = Math.max(20, origin.width + dx);
-        if (handle.includes("s")) height = Math.max(16, origin.height + dy);
-        if (handle.includes("w")) {
-          width = Math.max(20, origin.width - dx);
-          x = origin.x + (origin.width - width);
-        }
-        if (handle.includes("n")) {
-          height = Math.max(16, origin.height - dy);
-          y = origin.y + (origin.height - height);
-        }
-        const updates: Partial<CanvasObject> = { x, y, width, height };
-        if (origin.type === "text") {
-          updates.fontSize = Math.max(8, Math.round(height / 1.3));
-        }
-        updateObject(drag.id, updates);
-      } else if (drag.mode === "rotate") {
-        const angleRad = Math.atan2(e.clientY - drag.centerY - (containerRef.current?.getBoundingClientRect().top || 0), e.clientX - drag.centerX - (containerRef.current?.getBoundingClientRect().left || 0));
-        let deg = (angleRad * 180) / Math.PI + 90;
-        deg = Math.round(deg);
-        if (deg < 0) deg += 360;
-        updateObject(drag.id, { rotation: deg });
-      }
-    },
-    [computeSnappedPosition]
-  );
-
-  const handleWindowMouseUp = useCallback(() => {
-    dragStateRef.current = null;
+  const handleDragEnd = useCallback((obj: CanvasObject, e: Konva.KonvaEventObject<DragEvent>) => {
     setGuides({ v: null, h: null });
-    window.removeEventListener("mousemove", handleWindowMouseMove);
-    window.removeEventListener("mouseup", handleWindowMouseUp);
-  }, [handleWindowMouseMove]);
+    updateObject(obj.id, { x: Math.round(e.target.x()), y: Math.round(e.target.y()) });
+  }, [updateObject]);
 
+  // Attach transformer to selected node
   useEffect(() => {
-    return () => {
-      window.removeEventListener("mousemove", handleWindowMouseMove);
-      window.removeEventListener("mouseup", handleWindowMouseUp);
-    };
-  }, [handleWindowMouseMove, handleWindowMouseUp]);
+    const transformer = transformerRef.current;
+    const stage = stageRef.current;
+    if (!transformer || !stage) return;
+    if (selectedId) {
+      const node = stage.findOne(`#${selectedId}`);
+      if (node) {
+        transformer.nodes([node]);
+        transformer.getLayer()?.batchDraw();
+      }
+    } else {
+      transformer.nodes([]);
+      transformer.getLayer()?.batchDraw();
+    }
+  }, [selectedId, objects]);
 
+  // Keyboard shortcuts
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if ((e.key === "Delete" || e.key === "Backspace") && selectedId) {
@@ -384,22 +317,10 @@ export function CertificateCanvasEditor({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [selectedId, objects]);
+  }, [selectedId, removeObject]);
 
   const sortedForRender = [...objects].sort((a, b) => a.zIndex - b.zIndex);
   const sortedForLayers = [...objects].sort((a, b) => b.zIndex - a.zIndex);
-
-  const resolveTextContent = (obj: CanvasObject) => {
-    if (obj.dataKey && previewRecord && previewRecord[obj.dataKey]) return previewRecord[obj.dataKey];
-    return obj.fallbackText || obj.name;
-  };
-
-  const handleMap: { key: string; cursor: string; style: React.CSSProperties }[] = [
-    { key: "nw", cursor: "nwse-resize", style: { top: -6, left: -6 } },
-    { key: "ne", cursor: "nesw-resize", style: { top: -6, right: -6 } },
-    { key: "sw", cursor: "nesw-resize", style: { bottom: -6, left: -6 } },
-    { key: "se", cursor: "nwse-resize", style: { bottom: -6, right: -6 } },
-  ];
 
   return (
     <div className={`flex flex-col overflow-hidden rounded-3xl border border-[#E5E7EB] bg-white shadow-sm ${className}`}>
@@ -413,7 +334,7 @@ export function CertificateCanvasEditor({
       </div>
 
       <div className="flex" style={{ height: CANVAS_HEIGHT + 32 }}>
-        {/* Left icon rail (Canva-like) */}
+        {/* Left icon rail */}
         <div className="flex w-24 shrink-0 flex-col items-center gap-2 overflow-y-auto border-r border-[#E5E7EB] bg-[#FAFAFA] py-5">
           <RailButton icon={Type} label="Texte" onClick={() => addObject("text")} />
           <RailButton icon={ImageIcon} label="Image" onClick={() => imageInputRef.current?.click()} />
@@ -426,111 +347,272 @@ export function CertificateCanvasEditor({
           <RailButton icon={LayersIcon} label="Calques" active={activeTab === "layers"} onClick={() => setActiveTab("layers")} />
         </div>
 
-        {/* Canvas workspace */}
-        <div className="flex flex-1 flex-col overflow-hidden bg-[#EFEFEA]">
-          <div className="flex flex-1 items-center justify-center overflow-auto p-8">
-            <div
-              ref={containerRef}
-              className="relative mx-auto overflow-hidden rounded-2xl bg-white shadow-2xl select-none ring-1 ring-black/5"
-              style={{ height: CANVAS_HEIGHT, width: "min(100%, 880px)" }}
-              onMouseDown={() => setSelectedId(null)}
-            >
-              {backgroundImageUrl ? (
-                <img src={backgroundImageUrl} alt="Fond du certificat" className="pointer-events-none h-full w-full object-contain" draggable={false} />
-              ) : pdfUrl ? (
-                <iframe src={pdfUrl} className="pointer-events-none h-full w-full" title="PDF Preview" />
-              ) : (
-                <div className="flex h-full items-center justify-center text-[#6B7280]">Aucun modèle chargé</div>
-              )}
+        {/* Canvas workspace — Konva Stage */}
+        <div ref={containerRef} className="relative flex flex-1 flex-col overflow-hidden bg-[#EFEFEA]">
+          {/* PDF background overlay (DOM iframe, since Konva can't render PDFs) */}
+          {pdfUrl && (
+            <iframe
+              src={pdfUrl}
+              className="pointer-events-none absolute rounded-2xl shadow-2xl ring-1 ring-black/5"
+              style={{
+                width: CANVAS_WIDTH,
+                height: CANVAS_HEIGHT,
+                transform: `translate(${stagePos.x}px, ${stagePos.y}px) scale(${stageScale})`,
+                transformOrigin: "top left",
+              }}
+              title="PDF Preview"
+            />
+          )}
+          <Stage
+            ref={stageRef}
+            width={CANVAS_WIDTH}
+            height={CANVAS_HEIGHT}
+            scaleX={stageScale}
+            scaleY={stageScale}
+            x={stagePos.x}
+            y={stagePos.y}
+            onMouseDown={(e) => {
+              if (e.target === e.target.getStage()) setSelectedId(null);
+            }}
+            style={{ width: "100%", height: "100%" }}
+          >
+            {/* Background layer */}
+            <Layer listening={false}>
+              {!pdfUrl && <Rect x={0} y={0} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill="white" />}
+              {backgroundImageUrl && <BackgroundImage url={backgroundImageUrl} />}
+            </Layer>
+
+            {/* Objects layer */}
+            <Layer>
+              {sortedForRender.map((obj) => {
+                if (!obj.visible) return null;
+                const isSelected = obj.id === selectedId;
+                const onSelect = () => setSelectedId(obj.id);
+                const onChange = (updates: Partial<CanvasObject>) => updateObject(obj.id, updates);
+                const onDragMove = (e: Konva.KonvaEventObject<DragEvent>) => handleDragMove(e, obj);
+                const onDragEndCb = (e: Konva.KonvaEventObject<DragEvent>) => handleDragEnd(obj, e);
+
+                if (obj.type === "text") {
+                  const content = (obj.dataKey && previewRecord && previewRecord[obj.dataKey]) || obj.fallbackText || obj.name;
+                  const fontStyle = obj.fontWeight === "Bold" ? "bold" : obj.fontWeight === "SemiBold" ? "600" : "normal";
+                  return (
+                    <Text
+                      key={obj.id}
+                      id={obj.id}
+                      x={obj.x}
+                      y={obj.y}
+                      width={obj.width}
+                      height={obj.height}
+                      text={content}
+                      fontSize={obj.fontSize || 24}
+                      fontFamily={obj.fontFamily || "Montserrat"}
+                      fontStyle={fontStyle}
+                      fill={obj.color || "#000000"}
+                      align={obj.textAlign || "left"}
+                      verticalAlign="middle"
+                      rotation={obj.rotation}
+                      opacity={obj.opacity}
+                      draggable={!obj.locked}
+                      onClick={onSelect}
+                      onTap={onSelect}
+                      onDragMove={onDragMove}
+                      onDragEnd={onDragEndCb}
+                      onTransformEnd={() => {
+                        const node = stageRef.current?.findOne(`#${obj.id}`) as Konva.Text | undefined;
+                        if (!node) return;
+                        const scaleX = node.scaleX();
+                        onChange({
+                          x: Math.round(node.x()),
+                          y: Math.round(node.y()),
+                          width: Math.max(20, Math.round(node.width() * scaleX)),
+                          rotation: Math.round(node.rotation()),
+                          fontSize: Math.max(8, Math.round((obj.fontSize || 24) * scaleX)),
+                        });
+                        node.scaleX(1);
+                      }}
+                    />
+                  );
+                }
+                if (obj.type === "image" && obj.src) {
+                  return (
+                    <KonvaImageShape
+                      key={obj.id}
+                      obj={obj}
+                      onSelect={onSelect}
+                      onChange={onChange}
+                      onDragMove={onDragMove}
+                      onDragEnd={onDragEndCb}
+                      stageRef={stageRef}
+                    />
+                  );
+                }
+                if (obj.type === "rect") {
+                  return (
+                    <Rect
+                      key={obj.id}
+                      id={obj.id}
+                      x={obj.x}
+                      y={obj.y}
+                      width={obj.width}
+                      height={obj.height}
+                      fill={obj.fill || undefined}
+                      stroke={obj.stroke || undefined}
+                      strokeWidth={obj.strokeWidth || 0}
+                      rotation={obj.rotation}
+                      opacity={obj.opacity}
+                      draggable={!obj.locked}
+                      onClick={onSelect}
+                      onTap={onSelect}
+                      onDragMove={onDragMove}
+                      onDragEnd={onDragEndCb}
+                      onTransformEnd={() => {
+                        const node = stageRef.current?.findOne(`#${obj.id}`) as Konva.Rect | undefined;
+                        if (!node) return;
+                        const sx = node.scaleX();
+                        const sy = node.scaleY();
+                        onChange({
+                          x: Math.round(node.x()),
+                          y: Math.round(node.y()),
+                          width: Math.max(10, Math.round(node.width() * sx)),
+                          height: Math.max(10, Math.round(node.height() * sy)),
+                          rotation: Math.round(node.rotation()),
+                        });
+                        node.scaleX(1);
+                        node.scaleY(1);
+                      }}
+                    />
+                  );
+                }
+                if (obj.type === "ellipse") {
+                  return (
+                    <Ellipse
+                      key={obj.id}
+                      id={obj.id}
+                      x={obj.x + obj.width / 2}
+                      y={obj.y + obj.height / 2}
+                      radiusX={obj.width / 2}
+                      radiusY={obj.height / 2}
+                      fill={obj.fill || undefined}
+                      stroke={obj.stroke || undefined}
+                      strokeWidth={obj.strokeWidth || 0}
+                      rotation={obj.rotation}
+                      opacity={obj.opacity}
+                      draggable={!obj.locked}
+                      onClick={onSelect}
+                      onTap={onSelect}
+                      onDragMove={onDragMove}
+                      onDragEnd={(e) => {
+                        setGuides({ v: null, h: null });
+                        const x = e.target.x();
+                        const y = e.target.y();
+                        onChange({ x: Math.round(x - obj.width / 2), y: Math.round(y - obj.height / 2) });
+                      }}
+                      onTransformEnd={() => {
+                        const node = stageRef.current?.findOne(`#${obj.id}`) as Konva.Ellipse | undefined;
+                        if (!node) return;
+                        const sx = node.scaleX();
+                        const sy = node.scaleY();
+                        const newW = Math.max(10, Math.round(obj.width * sx));
+                        const newH = Math.max(10, Math.round(obj.height * sy));
+                        onChange({
+                          x: Math.round(node.x() - newW / 2),
+                          y: Math.round(node.y() - newH / 2),
+                          width: newW,
+                          height: newH,
+                          rotation: Math.round(node.rotation()),
+                        });
+                        node.scaleX(1);
+                        node.scaleY(1);
+                      }}
+                    />
+                  );
+                }
+                if (obj.type === "line") {
+                  return (
+                    <KonvaLine
+                      key={obj.id}
+                      id={obj.id}
+                      points={[obj.x, obj.y, obj.x + obj.width, obj.y]}
+                      stroke={obj.stroke || "#1E1E1E"}
+                      strokeWidth={obj.strokeWidth || 2}
+                      rotation={obj.rotation}
+                      opacity={obj.opacity}
+                      draggable={!obj.locked}
+                      onClick={onSelect}
+                      onTap={onSelect}
+                      onDragMove={onDragMove}
+                      onDragEnd={onDragEndCb}
+                      onTransformEnd={() => {
+                        const node = stageRef.current?.findOne(`#${obj.id}`) as Konva.Line | undefined;
+                        if (!node) return;
+                        onChange({ x: Math.round(node.x()), y: Math.round(node.y()), rotation: Math.round(node.rotation()) });
+                      }}
+                    />
+                  );
+                }
+                if (obj.type === "qr") {
+                  return (
+                    <Group
+                      key={obj.id}
+                      id={obj.id}
+                      x={obj.x}
+                      y={obj.y}
+                      rotation={obj.rotation}
+                      opacity={obj.opacity}
+                      draggable={!obj.locked}
+                      onClick={onSelect}
+                      onTap={onSelect}
+                      onDragMove={onDragMove}
+                      onDragEnd={onDragEndCb}
+                      onTransformEnd={() => {
+                        const node = stageRef.current?.findOne(`#${obj.id}`) as Konva.Group | undefined;
+                        if (!node) return;
+                        const sx = node.scaleX();
+                        const sy = node.scaleY();
+                        onChange({
+                          x: Math.round(node.x()),
+                          y: Math.round(node.y()),
+                          width: Math.max(20, Math.round(obj.width * sx)),
+                          height: Math.max(20, Math.round(obj.height * sy)),
+                          rotation: Math.round(node.rotation()),
+                        });
+                        node.scaleX(1);
+                        node.scaleY(1);
+                      }}
+                    >
+                      <Rect width={obj.width} height={obj.height} fill="white" stroke="#1E1E1E" strokeWidth={2} dash={[4, 4]} />
+                      <Text text="QR" width={obj.width} height={obj.height} align="center" verticalAlign="middle" fontSize={Math.min(obj.width, obj.height) / 3} fontFamily="Montserrat" fill="#1E1E1E" />
+                    </Group>
+                  );
+                }
+                return null;
+              })}
 
               {/* Snap guides */}
-              {guides.v !== null && <div className="pointer-events-none absolute top-0 bottom-0 w-px bg-[#12A2AC]" style={{ left: guides.v }} />}
-              {guides.h !== null && <div className="pointer-events-none absolute left-0 right-0 h-px bg-[#12A2AC]" style={{ top: guides.h }} />}
+              {guides.v !== null && (
+                <KonvaLine points={[guides.v, 0, guides.v, CANVAS_HEIGHT]} stroke="#12A2AC" strokeWidth={1 / stageScale} listening={false} />
+              )}
+              {guides.h !== null && (
+                <KonvaLine points={[0, guides.h, CANVAS_WIDTH, guides.h]} stroke="#12A2AC" strokeWidth={1 / stageScale} listening={false} />
+              )}
 
-              {/* Objects */}
-              {sortedForRender.filter((o) => o.visible).map((obj) => {
-            const isSelected = obj.id === selectedId;
-            return (
-              <div
-                key={obj.id}
-                className="absolute"
-                style={{
-                  left: obj.x,
-                  top: obj.y,
-                  width: obj.width,
-                  height: obj.height,
-                  opacity: obj.opacity,
-                  transform: `rotate(${obj.rotation}deg)`,
-                  transformOrigin: "center center",
-                  cursor: obj.locked ? "not-allowed" : "move",
+              {/* Transformer */}
+              <Transformer
+                ref={transformerRef}
+                rotateEnabled={true}
+                enabledAnchors={["top-left", "top-right", "bottom-left", "bottom-right"]}
+                borderStroke="#D68C2D"
+                anchorStroke="#D68C2D"
+                anchorFill="white"
+                anchorSize={8}
+                rotateAnchorOffset={24}
+                boundBoxFunc={(oldBox, newBox) => {
+                  if (newBox.width < 10 || newBox.height < 10) return oldBox;
+                  return newBox;
                 }}
-                onMouseDown={(e) => startDrag(e, obj.id, "move")}
-              >
-                {obj.type === "text" && (
-                  <div
-                    className="flex h-full w-full items-center whitespace-nowrap"
-                    style={{
-                      fontFamily: obj.fontFamily,
-                      fontSize: obj.fontSize,
-                      color: obj.color,
-                      fontWeight: obj.fontWeight === "Bold" ? 700 : obj.fontWeight === "SemiBold" ? 600 : 400,
-                      justifyContent: obj.textAlign === "center" ? "center" : obj.textAlign === "right" ? "flex-end" : "flex-start",
-                    }}
-                  >
-                    {resolveTextContent(obj)}
-                  </div>
-                )}
-                {obj.type === "image" && (
-                  obj.src ? (
-                    <img src={obj.src} alt={obj.name} className="h-full w-full object-contain" draggable={false} />
-                  ) : (
-                    <div className="flex h-full w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#D68C2D]/50 bg-[#D68C2D]/5 text-[#D68C2D]">
-                      <ImageIcon className="size-6" />
-                      <span className="mt-1 text-[10px] font-medium">Importer</span>
-                    </div>
-                  )
-                )}
-                {obj.type === "rect" && (
-                  <div className="h-full w-full" style={{ backgroundColor: obj.fill, border: `${obj.strokeWidth}px solid ${obj.stroke}` }} />
-                )}
-                {obj.type === "ellipse" && (
-                  <div className="h-full w-full rounded-full" style={{ backgroundColor: obj.fill, border: `${obj.strokeWidth}px solid ${obj.stroke}` }} />
-                )}
-                {obj.type === "line" && (
-                  <div className="w-full" style={{ borderTop: `${obj.strokeWidth}px solid ${obj.stroke}`, marginTop: (obj.height || 2) / 2 }} />
-                )}
-                {obj.type === "qr" && (
-                  <div className="flex h-full w-full flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-[#1E1E1E]/40 bg-white text-[#1E1E1E]">
-                    <QrCode className="size-8" />
-                    <span className="text-[9px] font-medium text-center leading-tight px-1">QR unique par certificat</span>
-                  </div>
-                )}
-
-                {isSelected && !obj.locked && (
-                  <>
-                    <div className="pointer-events-none absolute inset-0 rounded-sm border-2 border-[#D68C2D]" />
-                    {handleMap.map((h) => (
-                      <div
-                        key={h.key}
-                        className="absolute z-10 h-3 w-3 rounded-full border-2 border-[#D68C2D] bg-white shadow"
-                        style={{ ...h.style, cursor: h.cursor }}
-                        onMouseDown={(e) => startDrag(e, obj.id, "resize", h.key)}
-                      />
-                    ))}
-                    <div
-                      className="absolute left-1/2 z-10 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full border-2 border-[#12A2AC] bg-white shadow"
-                      style={{ top: -32, cursor: "grab" }}
-                      onMouseDown={(e) => startDrag(e, obj.id, "rotate")}
-                    >
-                      <RotateCw className="size-3 text-[#12A2AC]" />
-                    </div>
-                  </>
-                )}
-              </div>
-                );
-              })}
-            </div>
-          </div>
+              />
+            </Layer>
+          </Stage>
         </div>
 
         {/* Side panel */}
@@ -649,6 +731,52 @@ export function CertificateCanvasEditor({
         </div>
       </div>
     </div>
+  );
+}
+
+// Helper component for Konva images (needs use-image hook)
+function KonvaImageShape({ obj, onSelect, onChange, onDragMove, onDragEnd, stageRef }: {
+  obj: CanvasObject;
+  onSelect: () => void;
+  onChange: (updates: Partial<CanvasObject>) => void;
+  onDragMove: (e: Konva.KonvaEventObject<DragEvent>) => void;
+  onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => void;
+  stageRef: React.RefObject<Konva.Stage | null>;
+}) {
+  const imgRef = useRef<Konva.Image>(null);
+  const [img] = useImage(obj.src || "", "anonymous");
+  return (
+    <KonvaImage
+      ref={imgRef}
+      id={obj.id}
+      x={obj.x}
+      y={obj.y}
+      width={obj.width}
+      height={obj.height}
+      image={img}
+      rotation={obj.rotation}
+      opacity={obj.opacity}
+      draggable={!obj.locked}
+      onClick={onSelect}
+      onTap={onSelect}
+      onDragMove={onDragMove}
+      onDragEnd={onDragEnd}
+      onTransformEnd={() => {
+        const node = stageRef.current?.findOne(`#${obj.id}`) as Konva.Image | undefined;
+        if (!node) return;
+        const sx = node.scaleX();
+        const sy = node.scaleY();
+        onChange({
+          x: Math.round(node.x()),
+          y: Math.round(node.y()),
+          width: Math.max(20, Math.round(node.width() * sx)),
+          height: Math.max(20, Math.round(node.height() * sy)),
+          rotation: Math.round(node.rotation()),
+        });
+        node.scaleX(1);
+        node.scaleY(1);
+      }}
+    />
   );
 }
 

@@ -6,6 +6,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  transpilePackages: ["konva", "react-konva"],
 }
 
 export default nextConfig

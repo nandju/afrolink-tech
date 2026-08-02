@@ -38,7 +38,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ClientSidebar } from "@/components/ui/client-sidebar";
-import { CertificateCanvasEditor, type CanvasObject } from "@/components/ui/certificate-canvas-editor";
+import { CertificateCanvasEditor, type CanvasObject, CANVAS_WIDTH, CANVAS_HEIGHT } from "@/components/ui/certificate-canvas-editor";
 import { CampaignOptionsPanel, DEFAULT_CAMPAIGN_OPTIONS, type CampaignOptions } from "@/components/ui/campaign-options-panel";
 import { FONT_CONFIGS, type FontFamily, type FontWeight, getFontFile, normalizeWeightForFamily, hexToRgb01 } from "@/lib/fonts";
 
@@ -116,6 +116,7 @@ export default function DashboardPage() {
   const excelInputRef = useRef<HTMLInputElement>(null);
   const bgImageInputRef = useRef<HTMLInputElement>(null);
   const campaignImageInputRef = useRef<HTMLInputElement>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeModule, setActiveModule] = useState<AppModule | null>(null);
   const [backgroundType, setBackgroundType] = useState<BackgroundType>("blank");
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
@@ -135,7 +136,7 @@ export default function DashboardPage() {
   const [canvasObjects, setCanvasObjects] = useState<CanvasObject[]>([
     {
       id: "name-field", type: "text", name: "Nom du participant", dataKey: DEFAULT_NAME_DATA_KEY, fallbackText: "KOUADIO JEAN-MARC",
-      x: 300, y: 400, width: 260, height: 42, rotation: 0, opacity: 1, zIndex: 1, visible: true, locked: false,
+      x: 291, y: 276, width: 260, height: 42, rotation: 0, opacity: 1, zIndex: 1, visible: true, locked: false,
       fontSize: 32, color: "#000000", fontFamily: "Montserrat", fontWeight: "Bold", textAlign: "left",
     },
   ]);
@@ -389,6 +390,29 @@ export default function DashboardPage() {
     return map;
   };
 
+  // Helper: compute adjusted (x,y) for pdf-lib so that rotation happens around
+  // the object's center (matching CSS transformOrigin: center center) instead of
+  // around the draw point (pdf-lib default).
+  // pdfX/pdfY = unrotated draw point in PDF coords
+  // cx/cy = object center in PDF coords
+  // angleDeg = rotation angle in degrees (same convention as CSS)
+  const rotateAroundCenter = (
+    pdfX: number, pdfY: number,
+    cx: number, cy: number,
+    angleDeg: number
+  ): { x: number; y: number } => {
+    if (!angleDeg) return { x: pdfX, y: pdfY };
+    const rad = (angleDeg * Math.PI) / 180;
+    const dx = pdfX - cx;
+    const dy = pdfY - cy;
+    // pdf-lib rotates counterclockwise in PDF coords (Y up), which matches
+    // CSS clockwise rotation in screen coords (Y down). Same formula.
+    return {
+      x: cx + dx * Math.cos(rad) - dy * Math.sin(rad),
+      y: cy + dx * Math.sin(rad) + dy * Math.cos(rad),
+    };
+  };
+
   const drawCanvasObjectsOnPage = (
     page: any,
     pageHeight: number,
@@ -405,10 +429,24 @@ export default function DashboardPage() {
         const fontFile = resolveFieldFontFile(obj.fontFamily as FontFamily, obj.fontWeight as FontWeight);
         const font = embeddedFonts.get(fontFile);
         if (font) {
+          const fontSize = obj.fontSize || 24;
+          // Bug B fix: pdf-lib positions text at the baseline (bottom), but DOM 'top' is the top of the box.
+          // Offset Y by the font's ascent so the text visually starts at obj.y.
+          const fontHeight = font.heightAtSize(fontSize);
+          const ascent = font.embedder?.font?.ascender
+            ? (font.embedder.font.ascender / font.embedder.font.unitsPerHead) * fontSize
+            : fontHeight * 0.8;
+          // Unrotated draw point in PDF coords
+          const drawX = obj.x;
+          const drawY = pageHeight - obj.y - ascent;
+          // Bug E fix: adjust draw point so rotation happens around object center
+          const cx = obj.x + obj.width / 2;
+          const cy = pageHeight - obj.y - obj.height / 2;
+          const rotated = rotateAroundCenter(drawX, drawY, cx, cy, obj.rotation || 0);
           page.drawText(value, {
-            x: obj.x,
-            y: pageHeight - obj.y,
-            size: obj.fontSize || 24,
+            x: rotated.x,
+            y: rotated.y,
+            size: fontSize,
             font,
             color: rgb(colorRgb.r, colorRgb.g, colorRgb.b),
             rotate: degrees(obj.rotation || 0),
@@ -418,9 +456,15 @@ export default function DashboardPage() {
       } else if (obj.type === "image" && obj.src) {
         const embedded = embeddedImages.get(obj.src);
         if (embedded) {
+          // Bug E fix: rotation around center, not corner.
+          const drawX = obj.x;
+          const drawY = pageHeight - obj.y - obj.height;
+          const cx = obj.x + obj.width / 2;
+          const cy = pageHeight - obj.y - obj.height / 2;
+          const rotated = rotateAroundCenter(drawX, drawY, cx, cy, obj.rotation || 0);
           page.drawImage(embedded, {
-            x: obj.x,
-            y: pageHeight - obj.y - obj.height,
+            x: rotated.x,
+            y: rotated.y,
             width: obj.width,
             height: obj.height,
             rotate: degrees(obj.rotation || 0),
@@ -431,8 +475,8 @@ export default function DashboardPage() {
         const fillRgb = hexToRgb01((obj.fill || "#D68C2D").slice(0, 7));
         const strokeRgb = hexToRgb01(obj.stroke || "#D68C2D");
         page.drawRectangle({
-          x: obj.x,
-          y: pageHeight - obj.y - obj.height,
+          x: (() => { const cx = obj.x + obj.width / 2; const cy = pageHeight - obj.y - obj.height / 2; return rotateAroundCenter(obj.x, pageHeight - obj.y - obj.height, cx, cy, obj.rotation || 0).x; })(),
+          y: (() => { const cx = obj.x + obj.width / 2; const cy = pageHeight - obj.y - obj.height / 2; return rotateAroundCenter(obj.x, pageHeight - obj.y - obj.height, cx, cy, obj.rotation || 0).y; })(),
           width: obj.width,
           height: obj.height,
           color: rgb(fillRgb.r, fillRgb.g, fillRgb.b),
@@ -466,8 +510,8 @@ export default function DashboardPage() {
       } else if (obj.type === "qr") {
         // Placeholder visuel : le QR unique sera généré lors du lancement de la campagne (backend)
         page.drawRectangle({
-          x: obj.x,
-          y: pageHeight - obj.y - obj.height,
+          x: (() => { const cx = obj.x + obj.width / 2; const cy = pageHeight - obj.y - obj.height / 2; return rotateAroundCenter(obj.x, pageHeight - obj.y - obj.height, cx, cy, obj.rotation || 0).x; })(),
+          y: (() => { const cx = obj.x + obj.width / 2; const cy = pageHeight - obj.y - obj.height / 2; return rotateAroundCenter(obj.x, pageHeight - obj.y - obj.height, cx, cy, obj.rotation || 0).y; })(),
           width: obj.width,
           height: obj.height,
           borderColor: rgb(0.12, 0.12, 0.12),
@@ -500,7 +544,7 @@ export default function DashboardPage() {
           pdfDoc = await PDFDocument.load(templateBytes);
         } else {
           pdfDoc = await PDFDocument.create();
-          pdfDoc.addPage([842, 595]); // A4 landscape
+          pdfDoc.addPage([CANVAS_WIDTH, CANVAS_HEIGHT]); // A4 landscape matching canvas
         }
         const pages = pdfDoc.getPages();
         const firstPage = pages[0];
@@ -508,12 +552,33 @@ export default function DashboardPage() {
         const embeddedFonts = await getEmbeddedFontsForDocument(pdfDoc);
         const embeddedImages = await embedImagesForDocument(pdfDoc);
 
-        // If image background, embed it and draw it as full-page background
+        // Bug D fix: replicate CSS object-cover — scale image to fill canvas,
+        // maintain aspect ratio, crop overflow. pdf-lib doesn't support source
+        // cropping directly, so we compute the draw dimensions that cover the
+        // canvas and offset to center the image.
         if (backgroundImage && !pdfFile) {
           try {
             const { bytes, isPng } = dataUrlToBytes(backgroundImage);
             const bgImg = isPng ? await pdfDoc.embedPng(bytes) : await pdfDoc.embedJpg(bytes);
-            firstPage.drawImage(bgImg, { x: 0, y: 0, width: 842, height: 595 });
+            const imgW = bgImg.width;
+            const imgH = bgImg.height;
+            const imgRatio = imgW / imgH;
+            const canvasRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
+            let drawW: number, drawH: number, drawX: number, drawY: number;
+            if (imgRatio > canvasRatio) {
+              // Image is wider — scale to height, crop width
+              drawH = CANVAS_HEIGHT;
+              drawW = CANVAS_HEIGHT * imgRatio;
+              drawX = (CANVAS_WIDTH - drawW) / 2;
+              drawY = 0;
+            } else {
+              // Image is taller — scale to width, crop height
+              drawW = CANVAS_WIDTH;
+              drawH = CANVAS_WIDTH / imgRatio;
+              drawX = 0;
+              drawY = (CANVAS_HEIGHT - drawH) / 2;
+            }
+            firstPage.drawImage(bgImg, { x: drawX, y: drawY, width: drawW, height: drawH });
           } catch (e) {
             console.error("Impossible d'intégrer l'image de fond", e);
           }
@@ -557,7 +622,7 @@ export default function DashboardPage() {
         pdfDoc = await PDFDocument.load(pdfBytes);
       } else {
         pdfDoc = await PDFDocument.create();
-        pdfDoc.addPage([842, 595]);
+        pdfDoc.addPage([CANVAS_WIDTH, CANVAS_HEIGHT]);
       }
       const pages = pdfDoc.getPages();
       const firstPage = pages[0];
@@ -570,7 +635,23 @@ export default function DashboardPage() {
         try {
           const { bytes, isPng } = dataUrlToBytes(backgroundImage);
           const bgImg = isPng ? await pdfDoc.embedPng(bytes) : await pdfDoc.embedJpg(bytes);
-          firstPage.drawImage(bgImg, { x: 0, y: 0, width: 842, height: 595 });
+          const imgW = bgImg.width;
+          const imgH = bgImg.height;
+          const imgRatio = imgW / imgH;
+          const canvasRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
+          let drawW: number, drawH: number, drawX: number, drawY: number;
+          if (imgRatio > canvasRatio) {
+            drawH = CANVAS_HEIGHT;
+            drawW = CANVAS_HEIGHT * imgRatio;
+            drawX = (CANVAS_WIDTH - drawW) / 2;
+            drawY = 0;
+          } else {
+            drawW = CANVAS_WIDTH;
+            drawH = CANVAS_WIDTH / imgRatio;
+            drawX = 0;
+            drawY = (CANVAS_HEIGHT - drawH) / 2;
+          }
+          firstPage.drawImage(bgImg, { x: drawX, y: drawY, width: drawW, height: drawH });
         } catch (e) {
           console.error("Impossible d'intégrer l'image de fond", e);
         }
@@ -653,8 +734,8 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen bg-[#EFEFEA]">
-      <ClientSidebar />
-      <main className="ml-64 flex-1 px-8 py-8">
+      <ClientSidebar onCollapsedChange={setSidebarCollapsed} />
+      <main className={`flex-1 px-8 py-8 transition-all duration-300 ${sidebarCollapsed ? "ml-20" : "ml-64"}`}>
         <div className="mx-auto w-full">
           {/* Module selection screen */}
           {!activeModule && (

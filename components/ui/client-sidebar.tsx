@@ -30,10 +30,16 @@ const menuItems = [
   { href: "/client/settings", label: "Paramètres", icon: Settings },
 ]
 
-export function ClientSidebar() {
+export function ClientSidebar({ onCollapsedChange }: { onCollapsedChange?: (collapsed: boolean) => void }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
+
+  const toggleCollapsed = () => {
+    const next = !isCollapsed
+    setIsCollapsed(next)
+    onCollapsedChange?.(next)
+  }
 
   const handleLogout = () => {
     clearAuthSession()
@@ -58,7 +64,7 @@ export function ClientSidebar() {
             </div>
           )}
           <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={toggleCollapsed}
             className="rounded-lg p-2 text-[#6B7280] transition-colors hover:bg-[#FAFAFA] hover:text-[#1E1E1E]"
           >
             {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
