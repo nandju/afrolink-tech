@@ -35,9 +35,10 @@ import {
   Users,
   AlertCircle,
   Image as ImageIcon,
+  MonitorOff,
 } from "lucide-react";
 import { toast } from "sonner";
-import { ClientSidebar } from "@/components/ui/client-sidebar";
+import { ClientLayout } from "@/components/ui/client-layout";
 import { CertificateCanvasEditor, type CanvasObject, CANVAS_WIDTH, CANVAS_HEIGHT } from "@/components/ui/certificate-canvas-editor";
 import { CampaignOptionsPanel, DEFAULT_CAMPAIGN_OPTIONS, type CampaignOptions } from "@/components/ui/campaign-options-panel";
 import { FONT_CONFIGS, type FontFamily, type FontWeight, getFontFile, normalizeWeightForFamily, hexToRgb01 } from "@/lib/fonts";
@@ -116,7 +117,6 @@ export default function DashboardPage() {
   const excelInputRef = useRef<HTMLInputElement>(null);
   const bgImageInputRef = useRef<HTMLInputElement>(null);
   const campaignImageInputRef = useRef<HTMLInputElement>(null);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeModule, setActiveModule] = useState<AppModule | null>(null);
   const [backgroundType, setBackgroundType] = useState<BackgroundType>("blank");
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
@@ -732,11 +732,43 @@ export default function DashboardPage() {
     await generateCertificates();
   };
 
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobileOrTablet(window.innerWidth < 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  if (isMobileOrTablet) {
+    return (
+      <ClientLayout className="bg-[#EFEFEA]">
+        <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
+          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#D68C2D]/10">
+            <MonitorOff className="h-10 w-10 text-[#D68C2D]" />
+          </div>
+          <h1 className="font-heading text-3xl font-bold text-[#1E1E1E]">
+            Fonctionnalité indisponible sur mobile et tablette
+          </h1>
+          <p className="mt-4 max-w-md text-lg text-[#6B7280]">
+            La création de campagne nécessite un écran plus large pour une expérience optimale.
+            Veuillez utiliser un ordinateur de bureau ou un ordinateur portable pour accéder à cette fonctionnalité.
+          </p>
+          <button
+            type="button"
+            onClick={() => router.push("/client/dashboard")}
+            className="mt-8 rounded-xl bg-[#D68C2D] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#D68C2D]/90"
+          >
+            Retour au dashboard
+          </button>
+        </div>
+      </ClientLayout>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen bg-[#EFEFEA]">
-      <ClientSidebar onCollapsedChange={setSidebarCollapsed} />
-      <main className={`flex-1 px-8 py-8 transition-all duration-300 ${sidebarCollapsed ? "ml-20" : "ml-64"}`}>
-        <div className="mx-auto w-full">
+    <ClientLayout className="bg-[#EFEFEA]">
+      <div className="mx-auto w-full">
           {/* Module selection screen */}
           {!activeModule && (
             <div>
@@ -1092,9 +1124,8 @@ export default function DashboardPage() {
               )}
             </>
           )}
-        </div>
-      </main>
-    </div>
+      </div>
+    </ClientLayout>
   );
 }
 

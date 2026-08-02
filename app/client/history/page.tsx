@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ClientSidebar } from "@/components/ui/client-sidebar"
+import { ClientLayout } from "@/components/ui/client-layout"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -82,11 +82,8 @@ export default function HistoryPage() {
   )
 
   return (
-    <div className="flex min-h-screen bg-[#FAFAFA]">
-      <ClientSidebar />
-      
-      <main className="ml-64 flex-1 p-8">
-        <div className="mx-auto max-w-7xl">
+    <ClientLayout>
+      <div className="mx-auto max-w-7xl">
           {/* Header */}
           <div className="mb-8">
             <h1 className="font-heading text-4xl font-bold text-[#1E1E1E] mb-2">
@@ -243,8 +240,7 @@ export default function HistoryPage() {
               )}
             </CardContent>
           </Card>
-        </div>
-      </main>
-    </div>
+      </div>
+    </ClientLayout>
   )
 }

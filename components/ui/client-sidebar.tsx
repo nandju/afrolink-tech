@@ -32,6 +32,7 @@ const menuItems = [
 
 export function ClientSidebar({ onCollapsedChange }: { onCollapsedChange?: (collapsed: boolean) => void }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
 
@@ -41,6 +42,9 @@ export function ClientSidebar({ onCollapsedChange }: { onCollapsedChange?: (coll
     onCollapsedChange?.(next)
   }
 
+  const toggleMobile = () => setIsMobileOpen((v) => !v)
+  const closeMobile = () => setIsMobileOpen(false)
+
   const handleLogout = () => {
     clearAuthSession()
     document.cookie = "authenticated=; path=/; max-age=0"
@@ -48,10 +52,26 @@ export function ClientSidebar({ onCollapsedChange }: { onCollapsedChange?: (coll
   }
 
   return (
+    <>
+      {/* Mobile hamburger button */}
+      <button
+        onClick={toggleMobile}
+        className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white shadow-sm lg:hidden"
+        aria-label="Menu"
+      >
+        {isMobileOpen ? <ChevronLeft className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+      </button>
+
+      {/* Mobile overlay */}
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-30 bg-black/30 lg:hidden" onClick={closeMobile} />
+      )}
+
     <aside
       className={cn(
         "fixed left-0 top-0 z-40 h-screen border-r border-[#E5E7EB] bg-white transition-all duration-300",
-        isCollapsed ? "w-20" : "w-64"
+        isCollapsed ? "w-20" : "w-64",
+        isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}
     >
       <div className="flex h-full flex-col">
@@ -97,6 +117,7 @@ export function ClientSidebar({ onCollapsedChange }: { onCollapsedChange?: (coll
                 <li key={item.href}>
                   <Link
                     href={item.href}
+                    onClick={closeMobile}
                     className={cn(
                       "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
                       isActive
@@ -129,5 +150,6 @@ export function ClientSidebar({ onCollapsedChange }: { onCollapsedChange?: (coll
         </div>
       </div>
     </aside>
+    </>
   )
 }

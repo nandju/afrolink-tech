@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { ClientSidebar } from "@/components/ui/client-sidebar"
+import { ClientLayout } from "@/components/ui/client-layout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -88,11 +88,8 @@ export default function ClientDashboard() {
   ]
 
   return (
-    <div className="flex min-h-screen bg-[#FAFAFA]">
-      <ClientSidebar />
-
-      <main className="ml-64 flex-1 p-8">
-        <div className="mx-auto max-w-7xl">
+    <ClientLayout>
+      <div className="mx-auto max-w-7xl">
           {/* Header */}
           <div className="mb-8">
             <h1 className="font-heading text-4xl font-bold text-[#1E1E1E]">
@@ -295,8 +292,7 @@ export default function ClientDashboard() {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </main>
-    </div>
+      </div>
+    </ClientLayout>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ClientSidebar } from "@/components/ui/client-sidebar"
+import { ClientLayout } from "@/components/ui/client-layout"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -118,11 +118,8 @@ export default function SupportPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#FAFAFA]">
-      <ClientSidebar />
-      
-      <main className="ml-64 flex-1 p-8">
-        <div className="mx-auto max-w-7xl">
+    <ClientLayout>
+      <div className="mx-auto max-w-7xl">
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
             <div>
@@ -324,8 +321,7 @@ export default function SupportPage() {
               )}
             </CardContent>
           </Card>
-        </div>
-      </main>
-    </div>
+      </div>
+    </ClientLayout>
   )
 }
