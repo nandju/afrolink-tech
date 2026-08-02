@@ -141,6 +141,8 @@ export default function DashboardPage() {
     },
   ]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [canvasWidth, setCanvasWidth] = useState<number | undefined>(undefined);
+  const [canvasHeight, setCanvasHeight] = useState<number | undefined>(undefined);
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
   const [maxValidatedStep, setMaxValidatedStep] = useState<WizardStep>(1);
   const [participantMode, setParticipantMode] = useState<ParticipantMode | null>(null);
@@ -212,6 +214,8 @@ export default function DashboardPage() {
 
     setPdfFile(file);
     setBackgroundType("pdf");
+    setCanvasWidth(undefined);
+    setCanvasHeight(undefined);
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
@@ -254,6 +258,8 @@ export default function DashboardPage() {
     setBackgroundImageName(null);
     setPdfFile(null);
     setPdfPreview(null);
+    setCanvasWidth(undefined);
+    setCanvasHeight(undefined);
     prouvToast.info("Certificat vierge sélectionné");
   };
 
@@ -538,13 +544,16 @@ export default function DashboardPage() {
         templateBytes = await pdfFile.arrayBuffer();
       }
 
+      const effectiveCanvasW = canvasWidth || CANVAS_WIDTH;
+      const effectiveCanvasH = canvasHeight || CANVAS_HEIGHT;
+
       for (const nameItem of names) {
         let pdfDoc: PDFDocument;
         if (templateBytes) {
           pdfDoc = await PDFDocument.load(templateBytes);
         } else {
           pdfDoc = await PDFDocument.create();
-          pdfDoc.addPage([CANVAS_WIDTH, CANVAS_HEIGHT]); // A4 landscape matching canvas
+          pdfDoc.addPage([effectiveCanvasW, effectiveCanvasH]);
         }
         const pages = pdfDoc.getPages();
         const firstPage = pages[0];
@@ -552,33 +561,12 @@ export default function DashboardPage() {
         const embeddedFonts = await getEmbeddedFontsForDocument(pdfDoc);
         const embeddedImages = await embedImagesForDocument(pdfDoc);
 
-        // Bug D fix: replicate CSS object-cover — scale image to fill canvas,
-        // maintain aspect ratio, crop overflow. pdf-lib doesn't support source
-        // cropping directly, so we compute the draw dimensions that cover the
-        // canvas and offset to center the image.
+        // Background image: full-frame draw (canvas ratio = image ratio, no cropping)
         if (backgroundImage && !pdfFile) {
           try {
             const { bytes, isPng } = dataUrlToBytes(backgroundImage);
             const bgImg = isPng ? await pdfDoc.embedPng(bytes) : await pdfDoc.embedJpg(bytes);
-            const imgW = bgImg.width;
-            const imgH = bgImg.height;
-            const imgRatio = imgW / imgH;
-            const canvasRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
-            let drawW: number, drawH: number, drawX: number, drawY: number;
-            if (imgRatio > canvasRatio) {
-              // Image is wider — scale to height, crop width
-              drawH = CANVAS_HEIGHT;
-              drawW = CANVAS_HEIGHT * imgRatio;
-              drawX = (CANVAS_WIDTH - drawW) / 2;
-              drawY = 0;
-            } else {
-              // Image is taller — scale to width, crop height
-              drawW = CANVAS_WIDTH;
-              drawH = CANVAS_WIDTH / imgRatio;
-              drawX = 0;
-              drawY = (CANVAS_HEIGHT - drawH) / 2;
-            }
-            firstPage.drawImage(bgImg, { x: drawX, y: drawY, width: drawW, height: drawH });
+            firstPage.drawImage(bgImg, { x: 0, y: 0, width: effectiveCanvasW, height: effectiveCanvasH });
           } catch (e) {
             console.error("Impossible d'intégrer l'image de fond", e);
           }
@@ -622,7 +610,9 @@ export default function DashboardPage() {
         pdfDoc = await PDFDocument.load(pdfBytes);
       } else {
         pdfDoc = await PDFDocument.create();
-        pdfDoc.addPage([CANVAS_WIDTH, CANVAS_HEIGHT]);
+        const w = canvasWidth || CANVAS_WIDTH;
+        const h = canvasHeight || CANVAS_HEIGHT;
+        pdfDoc.addPage([w, h]);
       }
       const pages = pdfDoc.getPages();
       const firstPage = pages[0];
@@ -635,23 +625,9 @@ export default function DashboardPage() {
         try {
           const { bytes, isPng } = dataUrlToBytes(backgroundImage);
           const bgImg = isPng ? await pdfDoc.embedPng(bytes) : await pdfDoc.embedJpg(bytes);
-          const imgW = bgImg.width;
-          const imgH = bgImg.height;
-          const imgRatio = imgW / imgH;
-          const canvasRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
-          let drawW: number, drawH: number, drawX: number, drawY: number;
-          if (imgRatio > canvasRatio) {
-            drawH = CANVAS_HEIGHT;
-            drawW = CANVAS_HEIGHT * imgRatio;
-            drawX = (CANVAS_WIDTH - drawW) / 2;
-            drawY = 0;
-          } else {
-            drawW = CANVAS_WIDTH;
-            drawH = CANVAS_WIDTH / imgRatio;
-            drawX = 0;
-            drawY = (CANVAS_HEIGHT - drawH) / 2;
-          }
-          firstPage.drawImage(bgImg, { x: drawX, y: drawY, width: drawW, height: drawH });
+          const w = canvasWidth || CANVAS_WIDTH;
+          const h = canvasHeight || CANVAS_HEIGHT;
+          firstPage.drawImage(bgImg, { x: 0, y: 0, width: w, height: h });
         } catch (e) {
           console.error("Impossible d'intégrer l'image de fond", e);
         }
@@ -679,7 +655,7 @@ export default function DashboardPage() {
       void renderLivePdfPreview();
     }, 120);
     return () => clearTimeout(timeout);
-  }, [pdfFile, backgroundImage, canvasObjects, names]);
+  }, [pdfFile, backgroundImage, canvasObjects, names, canvasWidth, canvasHeight]);
 
   useEffect(() => {
     return () => {
@@ -876,6 +852,9 @@ export default function DashboardPage() {
                       onObjectsChange={setCanvasObjects}
                       availableDataKeys={availableDataKeys}
                       previewRecord={names[0]?.record}
+                      canvasWidth={canvasWidth}
+                      canvasHeight={canvasHeight}
+                      onCanvasSizeChange={(w, h) => { setCanvasWidth(w); setCanvasHeight(h); }}
                     />
                     <div className="flex justify-end"><Button onClick={() => continueToStep(3)} className="h-12 rounded-xl bg-gradient-to-r from-[#D68C2D] to-[#12A2AC] text-white hover:shadow-lg transition-all px-8">Continuer<ArrowRight className="ml-2 h-5 w-5" /></Button></div>
                   </CardContent>
@@ -1038,6 +1017,9 @@ export default function DashboardPage() {
                       objects={canvasObjects}
                       onObjectsChange={setCanvasObjects}
                       availableDataKeys={availableDataKeys}
+                      canvasWidth={canvasWidth}
+                      canvasHeight={canvasHeight}
+                      onCanvasSizeChange={(w, h) => { setCanvasWidth(w); setCanvasHeight(h); }}
                     />
                     <div className="flex justify-end"><Button onClick={() => continueToStep(3)} className="h-12 rounded-xl bg-[#12A2AC] text-white hover:bg-[#12A2AC]/90 px-8">Continuer<ArrowRight className="ml-2 h-5 w-5" /></Button></div>
                   </CardContent>

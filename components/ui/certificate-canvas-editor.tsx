@@ -67,6 +67,9 @@ interface CertificateCanvasEditorProps {
   availableDataKeys: string[];
   previewRecord?: Record<string, string>;
   className?: string;
+  canvasWidth?: number;
+  canvasHeight?: number;
+  onCanvasSizeChange?: (width: number, height: number) => void;
 }
 
 export const SNAP_THRESHOLD = 6;
@@ -78,25 +81,11 @@ const nextId = (prefix: string) => `${prefix}-${Date.now()}-${idCounter++}`;
 
 // ---- Background image component ----
 
-function BackgroundImage({ url }: { url: string }) {
+function BackgroundImage({ url, width, height }: { url: string; width: number; height: number }) {
   const [img] = useImage(url, "anonymous");
   if (!img) return null;
-  // Compute object-cover crop
-  const imgRatio = img.width / img.height;
-  const canvasRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
-  let drawW: number, drawH: number, drawX: number, drawY: number;
-  if (imgRatio > canvasRatio) {
-    drawH = CANVAS_HEIGHT;
-    drawW = CANVAS_HEIGHT * imgRatio;
-    drawX = (CANVAS_WIDTH - drawW) / 2;
-    drawY = 0;
-  } else {
-    drawW = CANVAS_WIDTH;
-    drawH = CANVAS_WIDTH / imgRatio;
-    drawX = 0;
-    drawY = (CANVAS_HEIGHT - drawH) / 2;
-  }
-  return <KonvaImage image={img} x={drawX} y={drawY} width={drawW} height={drawH} listening={false} />;
+  // Full-contain: image ratio = canvas ratio, so no cropping needed
+  return <KonvaImage image={img} x={0} y={0} width={width} height={height} listening={false} />;
 }
 
 // ---- Main component ----
@@ -109,6 +98,9 @@ export function CertificateCanvasEditor({
   availableDataKeys,
   previewRecord,
   className = "",
+  canvasWidth,
+  canvasHeight,
+  onCanvasSizeChange,
 }: CertificateCanvasEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
@@ -121,6 +113,31 @@ export function CertificateCanvasEditor({
   const [stageScale, setStageScale] = useState(1);
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
 
+  const effectiveW = canvasWidth || CANVAS_WIDTH;
+  const effectiveH = canvasHeight || CANVAS_HEIGHT;
+
+  // Detect background image natural dimensions and compute dynamic canvas size
+  useEffect(() => {
+    if (!backgroundImageUrl || !onCanvasSizeChange) return;
+    const img = new window.Image();
+    img.onload = () => {
+      const maxW = 1600;
+      const maxH = 1200;
+      let w = img.naturalWidth;
+      let h = img.naturalHeight;
+      if (w > maxW) {
+        h = Math.round((h * maxW) / w);
+        w = maxW;
+      }
+      if (h > maxH) {
+        w = Math.round((w * maxH) / h);
+        h = maxH;
+      }
+      onCanvasSizeChange(w, h);
+    };
+    img.src = backgroundImageUrl;
+  }, [backgroundImageUrl, onCanvasSizeChange]);
+
   // Compute scale to fit canvas in container
   useEffect(() => {
     const container = containerRef.current;
@@ -128,21 +145,21 @@ export function CertificateCanvasEditor({
     const updateScale = () => {
       const availW = container.clientWidth - 64; // padding
       const availH = container.clientHeight - 64;
-      const scaleX = availW / CANVAS_WIDTH;
-      const scaleY = availH / CANVAS_HEIGHT;
+      const scaleX = availW / effectiveW;
+      const scaleY = availH / effectiveH;
       const scale = Math.min(scaleX, scaleY, 1);
       setStageScale(scale);
       // Center the stage
       setStagePos({
-        x: (container.clientWidth - CANVAS_WIDTH * scale) / 2,
-        y: (container.clientHeight - CANVAS_HEIGHT * scale) / 2,
+        x: (container.clientWidth - effectiveW * scale) / 2,
+        y: (container.clientHeight - effectiveH * scale) / 2,
       });
     };
     updateScale();
     const ro = new ResizeObserver(updateScale);
     ro.observe(container);
     return () => ro.disconnect();
-  }, []);
+  }, [effectiveW, effectiveH]);
 
   const selected = objects.find((o) => o.id === selectedId) || null;
 
@@ -186,7 +203,7 @@ export function CertificateCanvasEditor({
 
   const addObject = useCallback((type: CanvasObjectType) => {
     const maxZ = Math.max(0, ...objects.map((o) => o.zIndex));
-    const centerX = CANVAS_WIDTH / 2;
+    const centerX = effectiveW / 2;
     const base = { id: nextId(type), zIndex: maxZ + 1, opacity: 1, rotation: 0, visible: true, locked: false };
     let obj: CanvasObject;
     switch (type) {
@@ -244,8 +261,8 @@ export function CertificateCanvasEditor({
       let vLine: number | null = null;
       let hLine: number | null = null;
 
-      const vTargets: number[] = [0, CANVAS_WIDTH / 2, CANVAS_WIDTH];
-      const hTargets: number[] = [0, CANVAS_HEIGHT / 2, CANVAS_HEIGHT];
+      const vTargets: number[] = [0, effectiveW / 2, effectiveW];
+      const hTargets: number[] = [0, effectiveH / 2, effectiveH];
       objects
         .filter((o) => o.id !== obj.id && o.visible)
         .forEach((o) => {
@@ -333,7 +350,7 @@ export function CertificateCanvasEditor({
         <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">{objects.length} élément{objects.length > 1 ? "s" : ""}</span>
       </div>
 
-      <div className="flex" style={{ height: CANVAS_HEIGHT + 32 }}>
+      <div className="flex" style={{ height: effectiveH + 32 }}>
         {/* Left icon rail */}
         <div className="flex w-24 shrink-0 flex-col items-center gap-2 overflow-y-auto border-r border-[#E5E7EB] bg-[#FAFAFA] py-5">
           <RailButton icon={Type} label="Texte" onClick={() => addObject("text")} />
@@ -355,8 +372,8 @@ export function CertificateCanvasEditor({
               src={pdfUrl}
               className="pointer-events-none absolute rounded-2xl shadow-2xl ring-1 ring-black/5"
               style={{
-                width: CANVAS_WIDTH,
-                height: CANVAS_HEIGHT,
+                width: effectiveW,
+                height: effectiveH,
                 transform: `translate(${stagePos.x}px, ${stagePos.y}px) scale(${stageScale})`,
                 transformOrigin: "top left",
               }}
@@ -365,8 +382,8 @@ export function CertificateCanvasEditor({
           )}
           <Stage
             ref={stageRef}
-            width={CANVAS_WIDTH}
-            height={CANVAS_HEIGHT}
+            width={effectiveW}
+            height={effectiveH}
             scaleX={stageScale}
             scaleY={stageScale}
             x={stagePos.x}
@@ -378,8 +395,8 @@ export function CertificateCanvasEditor({
           >
             {/* Background layer */}
             <Layer listening={false}>
-              {!pdfUrl && <Rect x={0} y={0} width={CANVAS_WIDTH} height={CANVAS_HEIGHT} fill="white" />}
-              {backgroundImageUrl && <BackgroundImage url={backgroundImageUrl} />}
+              {!pdfUrl && <Rect x={0} y={0} width={effectiveW} height={effectiveH} fill="white" />}
+              {backgroundImageUrl && <BackgroundImage url={backgroundImageUrl} width={effectiveW} height={effectiveH} />}
             </Layer>
 
             {/* Objects layer */}
